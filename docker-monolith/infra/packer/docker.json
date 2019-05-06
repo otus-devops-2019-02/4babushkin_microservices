@@ -1,0 +1,34 @@
+{
+  "variables": {
+      "project_id" : "docker-239201",
+      "source_image_family" : "ubuntu-1604-lts",
+      "machine_type" : "f1-micro"
+  },
+  
+  "builders": [
+      {
+          "type": "googlecompute",
+          "project_id": "{{user `project_id`}}",
+          "image_name": "docker-monolith-{{timestamp}}",
+          "image_family": "docker-monolith-base",
+          "source_image_family": "{{user `source_image_family`}}",
+          "zone": "europe-west1-d",
+          "ssh_username": "appuser",
+          "machine_type": "{{user `machine_type`}}",
+          "disk_size" : "10",
+          "disk_type" : "pd-standard",
+          "image_description" : "docker-monolith",
+          "tags" : "{{user `tags`}}",
+          "network" : "default"
+      }
+  ],
+  "provisioners": [
+      {
+          "type" : "ansible",
+          "user" : "appuser",
+          "extra_arguments": ["--tags","docker-monolith"],
+          "ansible_env_vars": ["ANSIBLE_ROLES_PATH={{ pwd }}/ansible/roles","ansible_user="],
+          "playbook_file" : "ansible/playbooks/install_docker.yml"
+      }
+  ]
+}

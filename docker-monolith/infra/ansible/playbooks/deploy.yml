@@ -1,0 +1,6 @@
+---
+- name: Deploy docker container
+  hosts: reddit_app
+  become: true
+  roles:
+   - deploy
