@@ -1,10 +1,7 @@
 project = "docker-XXXXXX"
 public_key_path = "~/.ssh/appuser.pub"
 private_key_path = "~/.ssh/appuser"
-disk_image = "reddit-base"
+disk_image = "ubuntu-1604-lts"
 zone = "europe-west1-d"
-public_key_path_appuser1 = "~/.ssh/appuser.pub"
-public_key_path_appuser2 = "~/.ssh/appuser.pub"
-public_key_path_appuser3 = "~/.ssh/appuser.pub"
 count = 2
 

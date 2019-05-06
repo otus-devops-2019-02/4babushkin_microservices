@@ -21,7 +21,7 @@
   $ docker-machine create --driver google \
   --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts \
   --google-machine-type f1-micro \
-  --google-zone europe-west1-b \ docker-host
+  --google-zone europe-west1-b docker-host
   ```
   Переключение между машинами через eval (переключится на  docker-host)
   ```bash
@@ -40,6 +40,22 @@
   docker push 4babushkin/otus-reddit:1.0
   ```
 * Проверил запуск на локальной машине
+  ```bash
+    docker run --name reddit -d -p 9292:9292 4babushkin/otus-reddit:1.0
+  ```
+
+* Отсановить docker-machine `docker-machine rm docker-host`
+
+## Задание со *
+* Поднятие инстансов с помощью Terraform, их количество задается `count` в файле `terraform.tfvars`
+    - Запуск `terraform apply` 
+* Ansible. Несколько плейбуков с использованием динамического инвентори
+  - Первый плейбук для установки Docker `install_docker.yml`
+  - Второй реализован через роль `deploy` установка приложения
+  - Запуск `ansible-playbook playbooks/site.yml`
+* Packer: образ с докером `packer build packer/docker.json` 
+  * Нагуглил роль `nickjj.docker` собрал образ испольуя ее; (устанвока роли `ansible-galaxy install nickjj.docker`)
+ 
 
 ## Lesson-14 HW Docker-1
 
