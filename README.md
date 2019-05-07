@@ -1,6 +1,54 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+## Lesson-16 HW Docker-3
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=docker-3)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+[![](https://images.microbadger.com/badges/image/4babushkin/otus-reddit.svg)](http://microbadger.com/images/4babushkin/otus-reddit "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/4babushkin/otus-reddit.svg)](https://microbadger.com/images/4babushkin/otus-reddit "Get your own version badge on microbadger.com")
+
+## Основное задание
+* Создал файл для запуска docker-machine и подключния к хосту `start_docker_machine.sh`
+* скачал [файл](https://github.com/express42/reddit/archive/microservices.zip) 
+  ```bash
+  wget https://github.com/express42/reddit/archive/microservices.zip && unzip microservices.zip && mv reddit-microservices src && rm microservices.zip
+  ```
+* Создал Docker файлы для `post-py`, `comment` и `ui` и собрал образы
+
+  ```bash
+  docker pull mongo:latest
+  docker build -t 4babushkin/post:1.0 ./post-py
+  docker build -t 4babushkin/comment:1.0 ./comment
+  docker build -t 4babushkin/ui:1.0 ./ui
+  ```
+* Создадим сеть для приложения 
+  ```bash
+  docker network create reddit
+  docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db mongo:latest
+  docker run -d --network=reddit --network-alias=post 4babushkin/post:1.0
+  docker run -d --network=reddit --network-alias=comment 4babushkin/comment:1.0
+  docker run -d --network=reddit -p 9292:9292 4babushkin/ui:1.0
+  ```
+* Выключим старые копии контейнеров `docker kill $(docker ps -q)`
+* Создадим Docker volume `docker volume create reddit_db`
+* Запустим новые копии контейнеров:
+  ```bash
+  docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db \
+  -v reddit_db:/data/db mongo:latest
+  docker run -d --network=reddit --network-alias=post 4babushkin/post:1.0
+  docker run -d --network=reddit --network-alias=comment 4babushkin/comment:1.0
+  docker run -d --network=reddit -p 9292:9292 4babushkin/ui:1.0
+  ```
+
+## Задание со *
+* Оптимизировали образы используя alpine-linux
+  ```bash
+  $ docker images
+  REPOSITORY            TAG    IMAGE ID         CREATED        SIZE
+  4babushkin/post       1.0    3804823c5e86     3 hours ago    116MB
+  4babushkin/ui         1.0    78a1ae5d310c     5 hours ago    234MB
+  4babushkin/comment    1.0    faaf5fb536cc     5 hours ago    231MB
+  ```
+
 ## Lesson-15 HW Docker-2
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=docker-2)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
