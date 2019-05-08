@@ -44,6 +44,15 @@
   ```
 
 ## Задание со *
+* Заменим алиасы через файл `env.list`. 
+  ```bash
+  docker run -d --network=reddit --network-alias=mongo_db -v reddit_db:/data/db mongo:latest
+  docker run -d --network=reddit --network-alias=post --env-file ./env.list 4babushkin/post:1.0 
+  docker run -d --network=reddit --network-alias=comment --env-file ./env.list 4babushkin/comment:3.0
+  docker run -d --network=reddit -p 9292:9292 --env-file ./env.list 4babushkin/ui:3.0
+  ```
+  можно и так `--env VAR1=value1`
+
 * Оптимизировали образы используя alpine-linux и кое что еще ))
   - 4babushkin/post 
   [![](https://images.microbadger.com/badges/image/4babushkin/post.svg)](http://microbadger.com/images/4babushkin/post "Get your own image badge on microbadger.com")
