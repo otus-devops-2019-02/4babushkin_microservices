@@ -1,10 +1,8 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
-## Lesson-16 HW Docker-3
+# Lesson-16 HW Docker-3
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=docker-3)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
-
-[![](https://images.microbadger.com/badges/image/4babushkin/otus-reddit.svg)](http://microbadger.com/images/4babushkin/otus-reddit "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/4babushkin/otus-reddit.svg)](https://microbadger.com/images/4babushkin/otus-reddit "Get your own version badge on microbadger.com")
 
 ## Основное задание
 * Создал файл для запуска docker-machine и подключния к хосту `start_docker_machine.sh`
@@ -16,8 +14,8 @@
 
   ```bash
   docker pull mongo:latest
-  docker build -t 4babushkin/post:1.0 ./post-py
-  docker build -t 4babushkin/comment:1.0 ./comment
+  docker build --tag 4babushkin/post:1.0 ./post-py
+  docker build --tag 4babushkin/comment:1.0 ./comment
   docker build -t 4babushkin/ui:1.0 ./ui
   ```
 * Создадим сеть для приложения 
@@ -30,6 +28,7 @@
   ```
 * Выключим старые копии контейнеров `docker kill $(docker ps -q)`
 * Создадим Docker volume `docker volume create reddit_db`
+* Информация по volume `docker volume inspect reddit_db`
 * Запустим новые копии контейнеров:
   ```bash
   docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db \
@@ -38,18 +37,44 @@
   docker run -d --network=reddit --network-alias=comment 4babushkin/comment:1.0
   docker run -d --network=reddit -p 9292:9292 4babushkin/ui:1.0
   ```
+* Так как не очень удобное расположение volume, размещаем его в папке `/srv/mongodb` 
+  ```bash
+  docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db \
+  -v /srv/mongodb:/data/db mongo:latest
+  ```
 
 ## Задание со *
-* Оптимизировали образы используя alpine-linux
+* Оптимизировали образы используя alpine-linux и кое что еще ))
+  - 4babushkin/post 
+  [![](https://images.microbadger.com/badges/image/4babushkin/post.svg)](http://microbadger.com/images/4babushkin/post "Get your own image badge on microbadger.com")
+  - 4babushkin/ui [![](https://images.microbadger.com/badges/image/4babushkin/ui.svg)](http://microbadger.com/images/4babushkin/ui "Get your own image badge on microbadger.com")
+  - 4babushkin/comment [![](https://images.microbadger.com/badges/image/4babushkin/comment.svg)](http://microbadger.com/images/4babushkin/comment:3.0 "Get your own image badge on microbadger.com")
+
   ```bash
   $ docker images
   REPOSITORY            TAG    IMAGE ID         CREATED        SIZE
-  4babushkin/post       1.0    3804823c5e86     3 hours ago    116MB
-  4babushkin/ui         1.0    78a1ae5d310c     5 hours ago    234MB
-  4babushkin/comment    1.0    faaf5fb536cc     5 hours ago    231MB
+  4babushkin/post       1.0    3804823c5e86     3 hours ago    96.4MB
+  4babushkin/ui         1.0    78a1ae5d310c     5 hours ago    222MB
+  4babushkin/comment    1.0    faaf5fb536cc     5 hours ago    219MB
   ```
 
-## Lesson-15 HW Docker-2
+## Просто так
+* Запустил docker-machine на локальной машине в Virtualbox
+  - `docker-machine create --driver virtualbox default`
+  - ```bash
+    docker-machine env default
+    export DOCKER_TLS_VERIFY="1"
+    export DOCKER_HOST="tcp://192.168.99.100:2376"
+    export DOCKER_CERT_PATH="/home/4babushkin/.docker/machine/machines/default"
+    export DOCKER_MACHINE_NAME="default"
+    # Run this command to configure your shell: 
+    # eval $(docker-machine env default)
+    ```
+* если недо подключится по ssh `docker-machine ssh default`
+
+
+
+# Lesson-15 HW Docker-2
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=docker-2)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
 ## Основное задание
@@ -87,6 +112,10 @@
   ```docker
   docker push 4babushkin/otus-reddit:1.0
   ```
+  
+  [![](https://images.microbadger.com/badges/image/4babushkin/otus-reddit.svg)](http://microbadger.com/images/4babushkin/otus-reddit "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/4babushkin/otus-reddit.svg)](https://microbadger.com/images/4babushkin/otus-reddit "Get your own version badge on microbadger.com")
+
+
 * Проверил запуск на локальной машине
   ```bash
     docker run --name reddit -d -p 9292:9292 4babushkin/otus-reddit:1.0
@@ -105,7 +134,7 @@
   * Нагуглил роль `nickjj.docker` собрал образ испольуя ее; (устанвока роли `ansible-galaxy install nickjj.docker`)
  
 
-## Lesson-14 HW Docker-1
+# Lesson-14 HW Docker-1
 
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=docker-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
