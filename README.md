@@ -82,7 +82,7 @@ docker network connect front_net comment
 
 * Docker-compose
   
- Установка ubuntu & debian
+ Установка Docker-compose в ubuntu & debian
  ```bash
  sudo curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
  ```
@@ -92,7 +92,7 @@ docker-compose up -d
 docker-compose ps
 ```
 
-Имя проекта через параметр `container_name` container_name: ${comment_name}
+Имя проекта через параметр `container_name` container_name: cont_name_post_db
 
 
 
