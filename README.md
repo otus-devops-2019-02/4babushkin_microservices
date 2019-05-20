@@ -1,6 +1,120 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+# Lesson-16 HW Docker-4
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=docker-4)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+## Основное задание
+Запустим контейнер с использованием none-драйвера.
+> docker run -ti --rm --network none joffotron/docker-net-tools -c ifconfig
+```cmd
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+```
+
+Запустим контейнер в сетевом пространстве docker-хоста
+> docker run -ti --rm --network host joffotron/docker-net-tools -c ifconfig
+```cmd
+docker0   Link encap:Ethernet  HWaddr 02:42:E0:C3:43:A5  
+          inet addr:172.17.0.1  Bcast:172.17.255.255  Mask:255.255.0.0
+          UP BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+ens4      Link encap:Ethernet  HWaddr 42:01:0A:84:00:15  
+          inet addr:10.132.0.21  Bcast:10.132.0.21  Mask:255.255.255.255
+          inet6 addr: fe80::4001:aff:fe84:15%32692/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1460  Metric:1
+          RX packets:3617 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:3125 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:72891843 (69.5 MiB)  TX bytes:348718 (340.5 KiB)
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1%32692/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+```
+Запустим несколько раз (2-4)
+> docker run --network host -d nginx
+
+Видим что стартует только один котнейнер, потому что порт занят
+
+На docker-host машине выполните команду:
+> sudo ln -s /var/run/docker/netns /var/run/netns
+
+Теперь вы можете просматривать существующие в данный момент net-namespaces с помощью команды:
+> sudo ip netns
+
+* Bridge network driver
+  
+Создадим docker-сети
+> docker network create back_net --subnet=10.0.2.0/24
+
+> docker network create front_net --subnet=10.0.1.0/24
+
+```docker
+docker run -d --network=front_net -p 9292:9292 --name ui 4babushkin/ui:3.0 && \
+docker run -d --network=back_net --name comment 4babushkin/comment:1.0 && \
+docker run -d --network=back_net --name post 4babushkin/post:1.0 && \
+docker run -d --network=back_net --name mongo_db --network-alias=post_db --network-alias=comment_db mongo:latest
+```
+Docker при инициализации контейнера может подключить к нему только 1
+сеть. Поэтому нужно поместить контейнеры post и comment в обе сети
+```docker
+docker network connect front_net post
+docker network connect front_net comment
+```
+
+Остановим старые копии контейнеров
+> docker kill $(docker ps -q)
+
+* Docker-compose
+  
+ Установка Docker-compose в ubuntu & debian
+ ```bash
+ sudo curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+ ```
+```bash
+export USERNAME=4babushkin
+docker-compose up -d
+docker-compose ps
+```
+
+1) Имя проекта можно задать через через параметр `container_name` в docker-compose.yml
+   ```yaml
+   container_name: post_db_name
+   ```
+
+2) Имя проекта можно задать через через параметр `project_name` в docker-compose.yml
+   ```yaml
+   project_name: project_name
+   ```
+3) добавить переменную COMPOSE_PROJECT_NAME=project_name
+4) Еще можно запутить с ключем -p `docker-compose -p project_name up -d`
+
+
+## Задание со *
+* Что бы менять код без пересборки надо каким то образом наш код передать на хостовую машину
+* 1) можно склонировать с Git `git clone -b docker-4 https://github.com/otus-devops-2019-02/4babushkin_microservices.git`
+* Запуск `docker-compose -f docker-compose.override.example.yml up -d`
+
+https://devilbox.readthedocs.io/en/latest/configuration-files/docker-compose-override-yml.html
+
+
+
+
 # Lesson-16 HW Docker-3
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=docker-3)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
