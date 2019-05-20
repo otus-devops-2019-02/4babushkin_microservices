@@ -7,14 +7,17 @@ services:
       - ${db_volume}:/data/db
     networks:
       - ${back_net}
+
   ui:
     build: ./ui
     image: ${USER_NAME}/ui:${UI_VERSION}
+    command: ["puma", "--debug", "-w", "2"]
     container_name: ${ui_name}_${UI_VERSION}
     ports:
       - ${EXP_PORT}:9292/tcp
     networks:
       - ${front_net}
+
   post:
     build: ./post-py
     image: ${USER_NAME}/post:${POST_VERSION}
@@ -22,9 +25,11 @@ services:
     networks:
       - ${back_net}
       - ${front_net}
+
   comment:
     build: ./comment
     image: ${USER_NAME}/comment:${COMMENT_VERSION}
+    command: ["puma", "--debug", "-w", "2"]
     container_name: ${comment_name}_${COMMENT_VERSION}
     networks:
       - ${back_net}

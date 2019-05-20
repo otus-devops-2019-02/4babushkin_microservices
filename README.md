@@ -92,7 +92,26 @@ docker-compose up -d
 docker-compose ps
 ```
 
-Имя проекта через параметр `container_name` container_name: cont_name_post_db
+1) Имя проекта можно задать через через параметр `container_name` в docker-compose.yml
+   ```yaml
+   container_name: post_db_name
+   ```
+
+2) Имя проекта можно задать через через параметр `project_name` в docker-compose.yml
+   ```yaml
+   project_name: project_name
+   ```
+3) добавить переменную COMPOSE_PROJECT_NAME=project_name
+4) Еще можно запутить с ключем -p `docker-compose -p project_name up -d`
+
+
+## Задание со *
+* Что бы менять код без пересборки надо каким то образом наш код передать на хостовую машину
+* 1) можно склонировать с Git `git clone -b docker-4 https://github.com/otus-devops-2019-02/4babushkin_microservices.git`
+* Запуск `docker-compose -f docker-compose.override.example.yml up -d`
+
+https://devilbox.readthedocs.io/en/latest/configuration-files/docker-compose-override-yml.html
+
 
 
 
