@@ -1,7 +1,7 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
-# Lesson-18 HW gitlab-ci-1
+# Lesson-19 HW gitlab-ci-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=gitlab-ci-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
 
@@ -46,7 +46,7 @@ eval $(docker-machine env gitlab-ci)
 
 
 
-# Lesson-16 HW Docker-4
+# Lesson-17 HW Docker-4
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=docker-4)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
 ## Основное задание
