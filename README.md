@@ -1,6 +1,51 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+# Lesson-18 HW gitlab-ci-1
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=gitlab-ci-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+
+### Можно создать виртуальную машину через docker-machine 
+```bash
+#!/bin/bash
+export GOOGLE_PROJECT=docker-239201
+docker-machine create --driver google \
+--google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts \
+--google-machine-type n1-standard-1 \
+--google-disk-size 60 \
+--google-zone europe-west1-d \
+gitlab-ci
+```
+ добавить правила в фаервол
+```bash
+#!/bin/bash
+gcloud compute firewall-rules create gitlab-ci\
+ --allow tcp:80,tcp:443 \
+ --target-tags=docker-machine \
+ --description="gitlab-ci connections http & https" \
+ --direction=INGRESS
+ ```
+
+Что бы подключить docker-machine к созданному инстансу выполняем 
+
+```bash
+docker-machine create --driver generic --generic-ip-address=35.233.42.177 --generic-ssh-key ~/.ssh/appuser --generic-ssh-user=appuser gitlab-ci
+
+eval $(docker-machine env gitlab-ci)
+```
+изменнить ip в файле `gitlab-ci/docker-compose.yml` на внешний gitlab-ci инстанса
+
+
+### Я автоматизировал все через terraform
+`terraform apply`
+
+Создает инстанс, устанаваливает docker и запускает docker-compose.yml
+
+
+
+
+
+
 # Lesson-16 HW Docker-4
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=docker-4)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
