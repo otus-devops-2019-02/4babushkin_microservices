@@ -35,6 +35,7 @@ eval $(docker-machine env gitlab-ci)
 ```
 изменнить ip в файле `gitlab-ci/docker-compose.yml` на внешний gitlab-ci инстанса
 
+`docker-compose up -d`
 
 ### Я автоматизировал все через terraform
 `terraform apply`
