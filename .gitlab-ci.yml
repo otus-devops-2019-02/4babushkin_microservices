@@ -23,6 +23,7 @@ build_job:
   before_script: []
   script:
     - docker info
+    - cd reddit
     - docker build -t my-docker-image .
 
 
