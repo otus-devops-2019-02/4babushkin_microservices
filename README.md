@@ -43,7 +43,11 @@ eval $(docker-machine env gitlab-ci)
 Создает инстанс, устанаваливает docker и запускает docker-compose.yml
 
 ## Задание со *
-* добавить сборку контейнера с приложением reddit https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
+* добавить сборку контейнера с приложением reddit 
+
+https://docs.gitlab.com/ee/ci/docker/using_docker_build.html 
+
+https://angristan.xyz/build-push-docker-images-gitlab-ci/
 
 
 

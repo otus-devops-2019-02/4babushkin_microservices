@@ -14,13 +14,18 @@ before_script:
   - cd reddit
   - bundle install
 
+
 build_job:
+  image: docker:stable
   stage: build
+  services:
+    - docker:dind
+  before_script: []
   script:
     - docker info
-    - echo 'Building'
     - docker build -t my-docker-image .
-    
+
+
 
 test_unit_job:
   stage: test
