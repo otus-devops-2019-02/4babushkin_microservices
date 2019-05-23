@@ -43,12 +43,29 @@ eval $(docker-machine env gitlab-ci)
 Создает инстанс, устанаваливает docker и запускает docker-compose.yml
 
 ## Задание со *
-* добавить сборку контейнера с приложением reddit 
+* В шаг build добавил сборку контейнера с приложением reddit. Запускать надо с --docker-privileged
+
+sudo gitlab-runner register \
+  --non-interactive \
+  --url "http://35.241.141.247/" \
+  --registration-token "PROJECT_REGISTRATION_TOKEN" \
+  --executor "docker" \
+  --docker-privileged \
+  --docker-image alpine:latest \
+  --description "docker-runner" \
+  --tag-list "linux,xenial,ubuntu,docker" \
+  --run-untagged="true" \
+  --locked="false" \
+
 
 https://docs.gitlab.com/ee/ci/docker/using_docker_build.html 
 
 https://angristan.xyz/build-push-docker-images-gitlab-ci/
 
+
+* Настроил интеграцию Pipeline с тестовым Slack-чатом
+
+`https://devops-team-otus.slack.com/messages/CGZ9TTVC4`
 
 
 
