@@ -25,7 +25,6 @@ gcloud compute firewall-rules create gitlab-ci\
  --description="gitlab-ci connections http & https" \
  --direction=INGRESS
  ```
-
 Что бы подключить docker-machine к созданному инстансу выполняем 
 
 ```bash
@@ -40,12 +39,31 @@ eval $(docker-machine env gitlab-ci)
 ### Я автоматизировал все через terraform
 `terraform apply`
 
-Создает инстанс, устанаваливает docker и запускает docker-compose.yml
+Создает инстанс, устанаваливает docker и запускает docker-compose.yml с запуском Gitlab 
+
+* Произвел настройку GitLab, создал группу и проект;
+* Зарегистрировал раннер
+    * Что такое `.gitlab-ci.yaml`.  Это обычный yaml файл, который содержит инструкции для раннера, а именно:
+      * из какого docker образа собирать контейнер,
+      * какие переменные окружения установить,
+      * в какой последовательности запускать шаги,
+      * описание каждого шага.
 
 ## Задание со *
-* В шаг build добавил сборку контейнера с приложением reddit. Запускать надо с --docker-privileged
+* В шаг build добавил сборку контейнера с приложением reddit. Пушить на DockerHub я не стал так как нет ни какой сложности в этом ([описано тут](https://angristan.xyz/build-push-docker-images-gitlab-ci/) )
 
-sudo gitlab-runner register \
+https://docs.gitlab.com/ee/ci/docker/using_docker_build.html 
+
+
+
+* Запуск ранера осуществляется через ansible, с проверкой установленных компонентов и проверкой запущен ли ранер
+* зависимости ролей Ansible Galaxy `ansible-galaxy install -r environments/stage/requirements.yml`
+* Старт `ansible-playbook playbooks/runner.yml`
+
+( Запускать gitlab-runner надо с --docker-privileged иначе runer не видет docker
+
+```bash
+docker exec -it gitlab-runner gitlab-runner register \
   --non-interactive \
   --url "http://35.241.141.247/" \
   --registration-token "PROJECT_REGISTRATION_TOKEN" \
@@ -56,17 +74,15 @@ sudo gitlab-runner register \
   --tag-list "linux,xenial,ubuntu,docker" \
   --run-untagged="true" \
   --locked="false" \
+```
+)
 
+что нужно почитать 
+[АВТОМАТИЧЕСКОЕ МАСШТАБИРОВАНИЕ НЕПРЕРЫВНОГО РАЗВЕРТЫВАНИЯ GITLAB С ПОМОЩЬЮ GITLAB RUNNER](https://www.8host.com/blog/avtomaticheskoe-masshtabirovanie-nepreryvnogo-razvertyvaniya-gitlab-s-pomoshhyu-gitlab-runner/)
 
-https://docs.gitlab.com/ee/ci/docker/using_docker_build.html 
-
-https://angristan.xyz/build-push-docker-images-gitlab-ci/
-
-
-* Настроил интеграцию Pipeline с тестовым Slack-чатом
+Настроил интеграцию Pipeline с тестовым Slack-чатом
 
 `https://devops-team-otus.slack.com/messages/CGZ9TTVC4`
-
 
 
 # Lesson-17 HW Docker-4

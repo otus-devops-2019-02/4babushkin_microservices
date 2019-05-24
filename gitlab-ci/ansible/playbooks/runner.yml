@@ -1,0 +1,51 @@
+---
+- import_playbook: base.yml hostslist=gitlab-runner
+
+- import_playbook: pip.yml hostlist=gitlab-runner
+
+- import_playbook: docker.yml hostlist=gitlab-runner
+
+
+- name: Run gitlab runner
+  hosts: gitlab-runner
+  become: true
+  vars:
+    gitlab_url: http://35.241.141.247/
+    gitlab_registartion_token: RzTfcQSTgejyGT9NSUMe
+    gitlab_runner_name: my-runner
+
+  tasks:
+    - name: install pip docker package required by docker_container
+      pip:
+        name: docker
+
+    - name: run gitlab-runner container
+      docker_container:
+        name: gitlab-runner
+        image: gitlab/gitlab-runner:latest
+        volumes:
+         - /srv/gitlab-runner/config:/etc/gitlab-runner
+         - /var/run/docker.sock:/var/run/docker.sock
+        pull: yes
+        restart_policy: always
+        state: started
+
+    - name: List configured runners
+      shell: docker exec gitlab-runner gitlab-runner list
+      register: configured_runners
+      changed_when: False
+
+    - name: register gitlab-runner
+      shell: >
+        docker exec gitlab-runner gitlab-runner register \
+          --non-interactive \
+          --url "{{ gitlab_url }}" \
+          --registration-token "{{ gitlab_registartion_token }}" \
+          --executor "docker" \
+          --docker-image ruby:2.4.2 \
+          --description "{{ gitlab_runner_name }}" \
+          --tag-list "docker,linux,ubuntu,xenial" \
+          --docker-privileged
+          --run-untagged \
+          --locked="false"
+      when: configured_runners.stderr.find('\n{{ gitlab_runner_name }}') == -1
