@@ -1,0 +1,22 @@
+---
+#tasks file for deploy
+- name: Install docker module if needed
+  raw: test -n "$(pip show dockers)" || (apt-get -y install python-minimal python-pip && export LC_ALL=C && pip install docker)
+  changed_when: False
+
+
+# - name: Pull image
+#   docker_image:
+#     name: "{{ docker_image }}"
+#     pull: true
+
+# - name: Run container
+#   raw: docker run --name reddit_app -d -p 9292:9292 {{ docker_image }}
+
+- name: Running the container
+  docker_container:
+    name: reddit_app 
+    image: "{{ docker_image }}"
+    ports:
+    - "9292:9292"
+    state: started

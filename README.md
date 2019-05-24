@@ -1,6 +1,42 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+ 
+
+# Lesson-20 HW monitoring-1
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=monitoring-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+## Основное задание
+Создадим правило фаервола для Prometheus и Puma
+```bash
+$ gcloud compute firewall-rules create prometheus-default --allow tcp:9090
+$ gcloud compute firewall-rules create puma-default --allow tcp:9292
+```
+Создадим  **docker-host** `start_docker_machine.sh`
+
+Запуск Prometheus
+```docker
+docker run --rm -p 9090:9090 -d --name prometheus prom/prometheus:v2.1.0
+```
+
+Конфигурация
+  * В директории monitoring/prometheus создайте файл `prometheus.yml` c [настройками](https://gist.githubusercontent.com/Nklya/bfe2d817f72bc6376fb7d05507e97a1d/raw/9de77435fd7cb626767f358a488d5346ca7f3a74/prometheus.yml) 
+
+В директории prometheus собираем Docker образ:
+
+```bash
+$ export USER_NAME=4babushkin
+$ docker build -t $USER_NAME/prometheus .
+```
+Соберем images при помощи скриптов `docker_build.sh` в директории каждого сервиса
+
+```bash
+for i in post-py ui comment; do cd src/$i; bash docker_build.sh; cd -; done
+```
+
+## Задание со *
+
+
 # Lesson-19 HW gitlab-ci-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=gitlab-ci-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
