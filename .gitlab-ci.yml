@@ -9,6 +9,7 @@ stages:
 
 variables:
   DATABASE_URL: 'mongodb://mongo/user_posts'
+  REDDIT_IP: '35.241.141.247'
 
 before_script:
   - cd reddit
@@ -16,16 +17,12 @@ before_script:
 
 
 build_job:
-  image: docker:stable
   stage: build
-  services:
-    - docker:dind
-  before_script: []
   script:
     - docker info
-    - cd reddit
-    - docker build -t my-docker-image .
-
+    - docker build -t reddit-monolit reddit/
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD
+    - docker push $REGISTRY_USER/reddit-monolit
 
 
 test_unit_job:

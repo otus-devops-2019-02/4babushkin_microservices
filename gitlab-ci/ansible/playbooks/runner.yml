@@ -10,8 +10,8 @@
   hosts: gitlab-runner
   become: true
   vars:
-    gitlab_url: http://35.241.141.247/
-    gitlab_registartion_token: RzTfcQSTgejyGT9NSUMe
+    gitlab_url: http://35.241.202.74/
+    gitlab_registartion_token: QUqGbK7tLiq5gZKFymsD
     gitlab_runner_name: my-runner
 
   tasks:

@@ -37,7 +37,7 @@ eval $(docker-machine env gitlab-ci)
 `docker-compose up -d`
 
 ### Я автоматизировал все через terraform
-`terraform apply`
+`terraform apply terraform/`
 
 Создает инстанс, устанаваливает docker и запускает docker-compose.yml с запуском Gitlab 
 
@@ -50,7 +50,8 @@ eval $(docker-machine env gitlab-ci)
       * описание каждого шага.
 
 ## Задание со *
-* В шаг build добавил сборку контейнера с приложением reddit. Пушить на DockerHub я не стал так как нет ни какой сложности в этом ([описано тут](https://angristan.xyz/build-push-docker-images-gitlab-ci/) )
+* Поднимает инстанс для для запуска контейнеров reddit `terraform apply terraform-reddit/`
+* В шаг build добавил сборку контейнера с приложением reddit. Пушить на DockerHub ([описано тут](https://angristan.xyz/build-push-docker-images-gitlab-ci/) )
 
 https://docs.gitlab.com/ee/ci/docker/using_docker_build.html 
 
