@@ -52,6 +52,9 @@ eval $(docker-machine env gitlab-ci)
 ## Задание со *
 * Поднимает инстанс для для запуска контейнеров reddit `terraform apply terraform-reddit/`
 * В шаг build добавил сборку контейнера с приложением reddit. Пушить на DockerHub ([описано тут](https://angristan.xyz/build-push-docker-images-gitlab-ci/) )
+ 
+ **Деплой сделать не успел**
+
 
 https://docs.gitlab.com/ee/ci/docker/using_docker_build.html 
 
