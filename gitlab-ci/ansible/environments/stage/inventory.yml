@@ -1,0 +1,6 @@
+gitlab-ci:
+  hosts:
+    "35.241.202.74":
+gitlab-runner:
+  hosts:
+    "35.241.202.74":

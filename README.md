@@ -1,7 +1,95 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
-# Lesson-16 HW Docker-4
+# Lesson-19 HW gitlab-ci-1
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=gitlab-ci-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+
+### Можно создать виртуальную машину через docker-machine 
+```bash
+#!/bin/bash
+export GOOGLE_PROJECT=docker-239201
+docker-machine create --driver google \
+--google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts \
+--google-machine-type n1-standard-1 \
+--google-disk-size 60 \
+--google-zone europe-west1-d \
+gitlab-ci
+```
+ добавить правила в фаервол
+```bash
+#!/bin/bash
+gcloud compute firewall-rules create gitlab-ci\
+ --allow tcp:80,tcp:443 \
+ --target-tags=docker-machine \
+ --description="gitlab-ci connections http & https" \
+ --direction=INGRESS
+ ```
+Что бы подключить docker-machine к созданному инстансу выполняем 
+
+```bash
+docker-machine create --driver generic --generic-ip-address=35.233.42.177 --generic-ssh-key ~/.ssh/appuser --generic-ssh-user=appuser gitlab-ci
+
+eval $(docker-machine env gitlab-ci)
+```
+изменнить ip в файле `gitlab-ci/docker-compose.yml` на внешний gitlab-ci инстанса
+
+`docker-compose up -d`
+
+### Я автоматизировал все через terraform
+`terraform apply terraform/`
+
+Создает инстанс, устанаваливает docker и запускает docker-compose.yml с запуском Gitlab 
+
+* Произвел настройку GitLab, создал группу и проект;
+* Зарегистрировал раннер
+    * Что такое `.gitlab-ci.yaml`.  Это обычный yaml файл, который содержит инструкции для раннера, а именно:
+      * из какого docker образа собирать контейнер,
+      * какие переменные окружения установить,
+      * в какой последовательности запускать шаги,
+      * описание каждого шага.
+
+## Задание со *
+* Поднимает инстанс для для запуска контейнеров reddit `terraform apply terraform-reddit/`
+* В шаг build добавил сборку контейнера с приложением reddit. Пушить на DockerHub ([описано тут](https://angristan.xyz/build-push-docker-images-gitlab-ci/) )
+ 
+ **Деплой сделать не успел**
+
+
+https://docs.gitlab.com/ee/ci/docker/using_docker_build.html 
+
+
+
+* Запуск ранера осуществляется через ansible, с проверкой установленных компонентов и проверкой запущен ли ранер
+* зависимости ролей Ansible Galaxy `ansible-galaxy install -r environments/stage/requirements.yml`
+* Старт `ansible-playbook playbooks/runner.yml`
+
+( Запускать gitlab-runner надо с --docker-privileged иначе runer не видет docker
+
+```bash
+docker exec -it gitlab-runner gitlab-runner register \
+  --non-interactive \
+  --url "http://35.241.141.247/" \
+  --registration-token "PROJECT_REGISTRATION_TOKEN" \
+  --executor "docker" \
+  --docker-privileged \
+  --docker-image alpine:latest \
+  --description "docker-runner" \
+  --tag-list "linux,xenial,ubuntu,docker" \
+  --run-untagged="true" \
+  --locked="false" \
+```
+)
+
+что нужно почитать 
+[АВТОМАТИЧЕСКОЕ МАСШТАБИРОВАНИЕ НЕПРЕРЫВНОГО РАЗВЕРТЫВАНИЯ GITLAB С ПОМОЩЬЮ GITLAB RUNNER](https://www.8host.com/blog/avtomaticheskoe-masshtabirovanie-nepreryvnogo-razvertyvaniya-gitlab-s-pomoshhyu-gitlab-runner/)
+
+Настроил интеграцию Pipeline с тестовым Slack-чатом
+
+`https://devops-team-otus.slack.com/messages/CGZ9TTVC4`
+
+
+# Lesson-17 HW Docker-4
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=docker-4)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
 ## Основное задание
