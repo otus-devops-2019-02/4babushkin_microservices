@@ -11,5 +11,6 @@ docker-machine create --driver google \
 --google-zone europe-west1-b docker-host
 #
 
+sleep 5
 eval $(docker-machine env docker-host)
 docker-machine ls

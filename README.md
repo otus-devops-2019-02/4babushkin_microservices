@@ -34,7 +34,14 @@ $ docker build -t $USER_NAME/prometheus .
 for i in post-py ui comment; do cd src/$i; bash docker_build.sh; cd -; done
 ```
 
+Будем поднимать наш Prometheus совместно с микросервисами. `docker/docker-compose.yml` 
+ ```bash
+ docker-compose up -d
+ ```
+
+
 ## Задание со *
+для мониторинга mongodb percona/mongodb_exporter
 
 
 # Lesson-19 HW gitlab-ci-1

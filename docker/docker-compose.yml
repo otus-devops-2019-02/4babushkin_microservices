@@ -43,8 +43,11 @@ services:
       networks:
         - back_net
         - front_net
-
-
+      links:
+        - cadvisor:cadvisor
+      depends_on:
+        - cadvisor
+      
   node-exporter:
     image: prom/node-exporter:v0.15.2
     user: root
@@ -58,6 +61,35 @@ services:
       - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
     networks:
       - back_net
+
+
+  # mongodb-exporter:
+  #   image: ${USER_NAME}/mongodb-exporter
+  #   ports:
+  #     - 9216:9216
+  #   # You can provide custom params to the exporter, according to your mongodb config, like SSL support, ...
+  #   command: -mongodb.tls -mongodb.tls-ca /etc/certs/mycert.crt -mongodb.tls-private-key /etc/certs/mycert.pem
+  #   volumes:
+  #     - /etc/certs:/etc/certs
+  #   environment:
+  #     - MONGODB_URL=mongodb://127.0.0.1:27017
+  #   networks:
+  #     - back_net
+
+  cadvisor:
+    image: google/cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - 8080:8080
+    networks:
+      - back_net
+      - front_net
+    restart: always
+  
 
 volumes:
   prometheus_data:
