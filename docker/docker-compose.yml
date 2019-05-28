@@ -1,0 +1,111 @@
+version: '3.3'
+services:
+  post_db:
+    image: mongo:3.2
+    container_name: ${post_db_name}
+    volumes:
+      - ${db_volume}:/data/db
+    networks:
+      back_net:
+        aliases:
+          - comment_db
+          - post_db
+  ui:
+    image: ${USER_NAME}/ui:${UI_VERSION}
+    container_name: ${ui_name}_${UI_VERSION}
+    ports:
+      - ${EXP_PORT}:9292/tcp
+    networks:
+      - front_net
+  post:
+    image: ${USER_NAME}/post:${POST_VERSION}
+    container_name: ${post_name}_${POST_VERSION}
+    networks:
+      - back_net
+      - front_net
+  comment:
+    image: ${USER_NAME}/comment:${COMMENT_VERSION}
+    container_name: ${comment_name}_${COMMENT_VERSION}
+    networks:
+      - back_net
+      - front_net
+
+  prometheus:
+      image: ${USER_NAME}/prometheus:latest
+      ports:
+        - '9090:9090'
+      volumes:
+        - prometheus_data:/prometheus
+      command:
+        - '--config.file=/etc/prometheus/prometheus.yml'
+        - '--storage.tsdb.path=/prometheus'
+        - '--storage.tsdb.retention=1d'
+      networks:
+        - back_net
+        - front_net
+      links:
+        - cadvisor:cadvisor
+      depends_on:
+        - cadvisor
+      
+  node-exporter:
+    image: prom/node-exporter:v0.15.2
+    user: root
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+    networks:
+      - back_net
+
+  mongodb-exporter:
+    image: ${USER_NAME}/mongodb-exporter
+    command:
+      - '--mongodb.uri=mongodb://post_db:27017'
+    networks:
+      - back_net
+
+  cloudprober:
+    image: ${USER_NAME}/cloudprober
+    ports:
+      - 9313:9313
+    networks:
+       - front_net
+       - back_net
+
+  cadvisor:
+    image: google/cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - 8080:8080
+    networks:
+      - back_net
+      - front_net
+    restart: always
+  
+
+volumes:
+  prometheus_data:
+  post_db:
+
+networks:
+  back_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 10.0.2.0/24
+  front_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 10.0.1.0/24

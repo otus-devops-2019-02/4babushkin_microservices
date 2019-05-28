@@ -1,6 +1,80 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+ 
+
+# Lesson-20 HW monitoring-1
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=monitoring-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+## Основное задание
+Создадим правило фаервола для Prometheus и Puma
+```bash
+$ gcloud compute firewall-rules create prometheus-default --allow tcp:9090
+$ gcloud compute firewall-rules create puma-default --allow tcp:9292
+```
+Создадим  **docker-host** `start_docker_machine.sh`
+
+Запуск Prometheus
+```docker
+docker run --rm -p 9090:9090 -d --name prometheus prom/prometheus:v2.1.0
+```
+
+Конфигурация
+  * В директории monitoring/prometheus создайте файл `prometheus.yml` c [настройками](https://gist.githubusercontent.com/Nklya/bfe2d817f72bc6376fb7d05507e97a1d/raw/9de77435fd7cb626767f358a488d5346ca7f3a74/prometheus.yml) 
+
+В директории prometheus собираем Docker образ:
+
+```bash
+$ export USER_NAME=4babushkin
+$ docker build -t $USER_NAME/prometheus .
+```
+Соберем images при помощи скриптов `docker_build.sh` в директории каждого сервиса
+
+```bash
+for i in post-py ui comment; do cd src/$i; bash docker_build.sh; cd -; done
+```
+
+Будем поднимать наш Prometheus совместно с микросервисами. `docker/docker-compose.yml` 
+ ```bash
+ docker-compose up -d
+ ```
+
+## Задание со * #1
+* Для мониторинга mongodb использую [percona/mongodb_exporter](https://github.com/percona/mongodb_exporter) Based on MongoDB exporter by David Cuadrado (@dcu), but forked for full sharded support and structure changes.
+* [По подобию собираю образ mongodb_exporter, чутка допилив](https://github.com/percona/mongodb_exporter/blob/master/Dockerfile) /monitoring/mondodb_exporter/
+## Задание со * #2
+
+Мониторинг сервисов с помощью Cloudprober
+
+/monitoring/cloudprober/Dockerfile
+
+- http://<ip_address>:9313/status
+- http://<ip_address>:9313/metrics
+
+Информация 
+* https://cloudprober.org/getting-started/
+* https://medium.com/google-cloud/cloudprober-1c16b2d05835
+
+## Просто так
+  * Добавил мониторинг cAdvisor - собирает метрики хостов и контейнеров
+
+## Задание со * #3
+* Создал Makefile который умеет собирать и пушить образы на [DockerHub](https://hub.docker.com/u/4babushkin)
+    - `make` или `make build` - просто собирает образы
+    - `make push` - отправляет в DockerHub
+
+[DockerHub](https://hub.docker.com/u/4babushkin)
+```
+4babushkin/cloudprober        latest    d472f7285c02    2 minutes ago    26.5MB
+4babushkin/prometheus         latest    df84ec07e2f1    2 hours ago      121MB
+4babushkin/ui                 latest    4acf7635e929    2 hours ago      235MB
+4babushkin/comment            latest    0b04a45160eb    2 hours ago      232MB
+4babushkin/post               latest    256fde96d531    2 hours ago      116MB
+4babushkin/mondodb_exporter   latest    aae1c6adc1ba    5 hours ago      16.7MB
+```
+
+
+
 # Lesson-19 HW gitlab-ci-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=gitlab-ci-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 

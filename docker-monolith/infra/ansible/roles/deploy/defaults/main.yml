@@ -1,3 +1,0 @@
----
-# defaults file for deploy
-docker_image: "4babushkin/otus-reddit:1.0"
