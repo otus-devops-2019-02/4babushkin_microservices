@@ -62,19 +62,12 @@ services:
     networks:
       - back_net
 
-
-  # mongodb-exporter:
-  #   image: ${USER_NAME}/mongodb-exporter
-  #   ports:
-  #     - 9216:9216
-  #   # You can provide custom params to the exporter, according to your mongodb config, like SSL support, ...
-  #   command: -mongodb.tls -mongodb.tls-ca /etc/certs/mycert.crt -mongodb.tls-private-key /etc/certs/mycert.pem
-  #   volumes:
-  #     - /etc/certs:/etc/certs
-  #   environment:
-  #     - MONGODB_URL=mongodb://127.0.0.1:27017
-  #   networks:
-  #     - back_net
+  mongodb-exporter:
+    image: ${USER_NAME}/mongodb-exporter
+    command:
+      - '--mongodb.uri=mongodb://post_db:27017'
+    networks:
+      - back_net
 
   cadvisor:
     image: google/cadvisor

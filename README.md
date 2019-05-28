@@ -39,9 +39,15 @@ for i in post-py ui comment; do cd src/$i; bash docker_build.sh; cd -; done
  docker-compose up -d
  ```
 
+## Задание со * #1
+* Для мониторинга mongodb использую [percona/mongodb_exporter](https://github.com/percona/mongodb_exporter) Based on MongoDB exporter by David Cuadrado (@dcu), but forked for full sharded support and structure changes.
+* [По подобию собираю образ mongodb_exporter, чутка допилив](https://github.com/percona/mongodb_exporter/blob/master/Dockerfile) /monitoring/mondodb_exporter/
+## Задание со * #2
 
-## Задание со *
-для мониторинга mongodb percona/mongodb_exporter
+## Задание со * #3
+* Создал Makefile который умеет собирать и пушить образы на [DockerHub](https://hub.docker.com/u/4babushkin)
+    - `make` или `make build` - просто собирает образы
+    - `make push` - отправляет в DockerHub
 
 
 # Lesson-19 HW gitlab-ci-1

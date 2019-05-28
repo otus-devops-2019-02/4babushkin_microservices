@@ -28,7 +28,7 @@ scrape_configs:
       - targets:
         - 'cadvisor:8080'
 
-  # - job_name: 'mongodb-exporter'
-  #   static_configs:
-  #     - targets:
-  #       - 'mongodb-exporter:9216'
+  - job_name: 'mongodb_node'
+    static_configs:
+      - targets:
+        - 'mongodb-exporter:9216'
