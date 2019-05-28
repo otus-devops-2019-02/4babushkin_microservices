@@ -69,6 +69,14 @@ services:
     networks:
       - back_net
 
+  cloudprober:
+    image: ${USER_NAME}/cloudprober
+    ports:
+      - 9313:9313
+    networks:
+       - front_net
+       - back_net
+
   cadvisor:
     image: google/cadvisor
     volumes:

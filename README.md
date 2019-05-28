@@ -44,10 +44,35 @@ for i in post-py ui comment; do cd src/$i; bash docker_build.sh; cd -; done
 * [По подобию собираю образ mongodb_exporter, чутка допилив](https://github.com/percona/mongodb_exporter/blob/master/Dockerfile) /monitoring/mondodb_exporter/
 ## Задание со * #2
 
+Мониторинг сервисов с помощью Cloudprober
+
+/monitoring/cloudprober/Dockerfile
+
+- http://<ip_address>:9313/status
+- http://<ip_address>:9313/metrics
+
+Информация 
+* https://cloudprober.org/getting-started/
+* https://medium.com/google-cloud/cloudprober-1c16b2d05835
+
+## Просто так
+  * Добавил мониторинг cAdvisor - собирает метрики хостов и контейнеров
+
 ## Задание со * #3
 * Создал Makefile который умеет собирать и пушить образы на [DockerHub](https://hub.docker.com/u/4babushkin)
     - `make` или `make build` - просто собирает образы
     - `make push` - отправляет в DockerHub
+
+[DockerHub](https://hub.docker.com/u/4babushkin)
+```
+4babushkin/cloudprober        latest    d472f7285c02    2 minutes ago    26.5MB
+4babushkin/prometheus         latest    df84ec07e2f1    2 hours ago      121MB
+4babushkin/ui                 latest    4acf7635e929    2 hours ago      235MB
+4babushkin/comment            latest    0b04a45160eb    2 hours ago      232MB
+4babushkin/post               latest    256fde96d531    2 hours ago      116MB
+4babushkin/mondodb_exporter   latest    aae1c6adc1ba    5 hours ago      16.7MB
+```
+
 
 
 # Lesson-19 HW gitlab-ci-1
