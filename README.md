@@ -1,7 +1,20 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
- 
+# Lesson-21 HW monitoring-2
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=monitoring-2)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+## Основное задание 
+
+gcloud compute firewall-rules create grafana-default --allow tcp:3000
+gcloud compute firewall-rules create advisor-default --allow tcp:8080
+
+docker-compose up -d 
+docker-compose -f docker-compose-monitoring.yml up -d
+
+docker-compose -f docker-compose-monitoring.yml up -d grafana
+
+**[сайт Grafana](https://grafana.com/dashboards)**
 
 # Lesson-20 HW monitoring-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=monitoring-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)

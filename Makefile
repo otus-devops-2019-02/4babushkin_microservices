@@ -1,13 +1,13 @@
 USER_NAME = 4babushkin
-
+export USER_NAME = 4babushkin
 build: post comment ui prometheus mondodb_exporter cloudprober
 push: push_comment push_post push_ui push_prometheus push_mondodb_exporter push_cloudprober
 
-post: 
+post:
 	cd src/post-py && bash docker_build.sh
 comment: 
 	cd src/comment && bash docker_build.sh
-ui: 
+ui:
 	cd src/ui && bash docker_build.sh
 
 prometheus:
