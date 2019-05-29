@@ -1,7 +1,7 @@
 USER_NAME = 4babushkin
-export USER_NAME = 4babushkin
-build: post comment ui prometheus mondodb_exporter cloudprober
-push: push_comment push_post push_ui push_prometheus push_mondodb_exporter push_cloudprober
+export USER_NAME=4babushkin
+build: post comment ui prometheus mondodb_exporter cloudprober alertmanager
+push: push_comment push_post push_ui push_prometheus push_mondodb_exporter push_cloudprober push_alertmanager
 
 post:
 	cd src/post-py && bash docker_build.sh
@@ -16,7 +16,8 @@ mondodb_exporter:
 	cd monitoring/mondodb_exporter && docker build -t ${USER_NAME}/mondodb_exporter .
 cloudprober:
 	cd monitoring/cloudprober && docker build -t ${USER_NAME}/cloudprober .
-
+alertmanager:
+	cd monitoring/alertmanager && docker build -t ${USER_NAME}/alertmanager .
 
 push_post:
 	docker push ${USER_NAME}/post
@@ -31,3 +32,5 @@ push_mondodb_exporter:
 	docker push ${USER_NAME}/mondodb_exporter
 push_cloudprober:
 	docker push ${USER_NAME}/cloudprober
+push_alertmanager:
+	docker push ${USER_NAME}/alertmanager
