@@ -1,5 +1,5 @@
-USER_NAME = 4babushkin
-export USER_NAME=4babushkin
+USER_NAME=4babushkin
+export USER_NAME
 build: post comment ui prometheus mondodb_exporter cloudprober alertmanager
 push: push_comment push_post push_ui push_prometheus push_mondodb_exporter push_cloudprober push_alertmanager
 

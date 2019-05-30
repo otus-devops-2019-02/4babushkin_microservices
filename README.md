@@ -6,12 +6,16 @@
 
 ## Основное задание 
 
+* Создадим  **docker-host** `start_docker_machine.sh`
+
 * Все правила мониторинга для gcp firewall
+```
 gcloud compute firewall-rules create grafana-default --allow tcp:3000
 gcloud compute firewall-rules create cadvisor-default --allow tcp:8080
 gcloud compute firewall-rules create cloudprober-default --allow tcp:9313
 gcloud compute firewall-rules create prometheus-alertmanager --allow tcp:9093
 gcloud compute firewall-rules create prometheus-default --allow tcp:9090
+```
 
 * собрать образы
   ```bash
@@ -35,8 +39,33 @@ gcloud compute firewall-rules create prometheus-default --allow tcp:9090
 
 **[сайт Grafana](https://grafana.com/dashboards)**
 
+* Настроен сбор метрик докера с помощью [cAdvisor](https://github.com/google/cadvisor)
+* Подняты [Grafana](https://grafana.com/dashboards) и [AlertManager](https://prometheus.io/docs/alerting/alertmanager/)
+* Настроены дашборды для сбора метрик приложения и бизнес метрик
+* Настроены алерты на остановку сервисов
+* Настроил интеграцию  тестовым Slack-чатом `https://devops-team-otus.slack.com/messages/CGZ9TTVC4`
+  
+
 ## Задание со *
-* Доработал Makefile
+* Доработал [Makefile](Makefile)
+* [В Docker в экспериментальном режиме реализована отдача метрик в формате
+Prometheus](https://docs.docker.com/config/thirdparty/prometheus/) 
+   * 1) создадим фаил /etc/docker/daemon.json 
+      ```json
+      {
+        "metrics-addr" : "0.0.0.0:9323",
+        "experimental" : true
+      }
+      ```
+    * 2) в prometheus.yml добавим таргет
+      ```yml
+       - job_name: 'docker'
+         # metrics_path defaults to '/metrics'
+         # scheme defaults to 'http'.
+         static_configs:
+           - targets: ['10.132.0.42:9323']
+      ```
+    https://medium.com/lucjuggery/docker-daemon-metrics-in-prometheus-7c359c7ff550
 
 # Lesson-20 HW monitoring-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=monitoring-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
