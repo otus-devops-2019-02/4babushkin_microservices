@@ -6,15 +6,37 @@
 
 ## Основное задание 
 
+* Все правила мониторинга для gcp firewall
 gcloud compute firewall-rules create grafana-default --allow tcp:3000
-gcloud compute firewall-rules create advisor-default --allow tcp:8080
+gcloud compute firewall-rules create cadvisor-default --allow tcp:8080
+gcloud compute firewall-rules create cloudprober-default --allow tcp:9313
+gcloud compute firewall-rules create prometheus-alertmanager --allow tcp:9093
+gcloud compute firewall-rules create prometheus-default --allow tcp:9090
 
-docker-compose up -d 
-docker-compose -f docker-compose-monitoring.yml up -d
+* собрать образы
+  ```bash
+  make
+  ```
+* запушить образы в [DockerHub](https://hub.docker.com/u/4babushkin)
+  ```bash
+  make push
+  ```
 
-docker-compose -f docker-compose-monitoring.yml up -d grafana
+* запустить приложение через `docker-compose` docker/docker-compose.yml
+  ```bash
+  docker-compose up -d 
+  ```
+* запустить мониторинг и алерты через `docker-compose` docker/docker-compose-monitoring.yml
+  ```bash
+  docker-compose -f docker-compose-monitoring.yml up -d
+  ```
+  * если остановить только один сервис `docker-compose -f docker-compose-monitoring.yml down grafana`
+  * если запустить только один сервис `docker-compose -f docker-compose-monitoring.yml up -d grafana`
 
 **[сайт Grafana](https://grafana.com/dashboards)**
+
+## Задание со *
+* Доработал Makefile
 
 # Lesson-20 HW monitoring-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=monitoring-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
