@@ -19,7 +19,6 @@
 
 
 
-
 # Lesson-21 HW monitoring-2
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=monitoring-2)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
