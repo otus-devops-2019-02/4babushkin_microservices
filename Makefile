@@ -2,6 +2,7 @@ USER_NAME=4babushkin
 export USER_NAME
 build: post comment ui prometheus mondodb_exporter cloudprober alertmanager fluentd
 push: push_comment push_post push_ui push_prometheus push_mondodb_exporter push_cloudprober push_alertmanager
+hw23: post comment ui fluentd
 
 post:
 	cd src/post-py && bash docker_build.sh

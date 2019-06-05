@@ -10,7 +10,7 @@ docker-machine create --driver google \
     --google-open-port 5601/tcp \
     --google-open-port 9292/tcp \
     --google-open-port 9411/tcp \
-    logging
+    --google-zone europe-west1-b logging
 
 #
 
