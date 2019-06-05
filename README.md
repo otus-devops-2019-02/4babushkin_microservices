@@ -1,6 +1,13 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+# Lesson-23 HW monitoring-2
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=logging-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+## Основное задание 
+
+
+
 # Lesson-21 HW monitoring-2
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=monitoring-2)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 

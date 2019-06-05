@@ -1,6 +1,6 @@
 USER_NAME=4babushkin
 export USER_NAME
-build: post comment ui prometheus mondodb_exporter cloudprober alertmanager
+build: post comment ui prometheus mondodb_exporter cloudprober alertmanager fluentd
 push: push_comment push_post push_ui push_prometheus push_mondodb_exporter push_cloudprober push_alertmanager
 
 post:
@@ -18,6 +18,8 @@ cloudprober:
 	cd monitoring/cloudprober && docker build -t ${USER_NAME}/cloudprober .
 alertmanager:
 	cd monitoring/alertmanager && docker build -t ${USER_NAME}/alertmanager .
+fluentd:
+	cd logging/fluentd && docker build -t ${USER_NAME}/fluentd .
 
 push_post:
 	docker push ${USER_NAME}/post
