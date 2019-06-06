@@ -17,6 +17,13 @@
 * В Fluentd настроен парсинг структурированных логов из сервиса Post
 * В Fluentd настроен парсинг неструктурированных логов из сервиса UI
 
+Что бы собрать нужные образы делаем `make hw23`
+
+Запуск `docker-compose -f docker-compose-logging.yml -f docker-compose.yml up -d`
+
+## Задание со *
+* Настроил fluentd для разбора еще одого формата логов
+
 
 
 # Lesson-21 HW monitoring-2
