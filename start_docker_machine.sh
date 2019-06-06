@@ -14,3 +14,6 @@ docker-machine create --driver google \
 sleep 5
 eval $(docker-machine env docker-host)
 docker-machine ls
+
+docker-machine ip logging
+

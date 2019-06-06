@@ -1,6 +1,31 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+# Lesson-23 HW monitoring-2
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=logging-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+## Основное задание 
+
+* Запуск докер машины `start_docker_machine_logging`
+* Создадал отдельный compose-файл для нашей системы логирования - `docker/docker-compose-logging.yml` который включает в себя 3 осовных компонента: 
+    - ElasticSearch (TSDB и поисковый движок для хранения данных)
+    - Fluentd (для агрегации и трансформации данных)
+    - Kibana (для визуализации) (kibana слушает на порту 5601)
+* Настроил и соберал docker image для fluentd
+    - что бы собрать `make fluentd`
+
+* В Fluentd настроен парсинг структурированных логов из сервиса Post
+* В Fluentd настроен парсинг неструктурированных логов из сервиса UI
+
+Что бы собрать нужные образы делаем `make hw23`
+
+Запуск `docker-compose -f docker-compose-logging.yml -f docker-compose.yml up -d`
+
+## Задание со *
+* Настроил fluentd для разбора еще одого формата логов
+
+
+
 # Lesson-21 HW monitoring-2
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=monitoring-2)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
