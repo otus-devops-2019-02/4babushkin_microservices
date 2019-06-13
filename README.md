@@ -1,7 +1,35 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
-# Lesson-23 HW monitoring-2
+# Lesson-25 HW kubernetes-1
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+## Основное задание 
+
+* Выполнил [Туториал Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
+
+* Проверил что поды создаются по созданным  deployment-ам (ui, post, mongo, comment)
+```bash
+▶ kubectl apply -f reddit 
+deployment.apps/comment-deployment created
+deployment.apps/mongo-deployment created
+deployment.apps/post-deployment created
+deployment.apps/ui-deployment created
+
+▶ kubectl get pods
+NAME                                  READY   STATUS    RESTARTS   AGE
+busybox-bd8fb7cbd-gxq79               1/1     Running   0          27m
+comment-deployment-55dd6c56b6-rzgxf   1/1     Running   0          2m5s
+mongo-deployment-6895dffdf4-hhr9p     1/1     Running   0          2m5s
+nginx-dbddb74b8-vsxwg                 1/1     Running   0          23m
+post-deployment-54b547d9bb-qkdr7      1/1     Running   0          2m5s
+ui-deployment-54cf59dcf8-bqgm9        1/1     Running   0          2m5s
+untrusted                             1/1     Running   0          15m
+
+```
+
+
+# Lesson-23 HW logging-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=logging-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
 ## Основное задание 
