@@ -1,6 +1,47 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+# Lesson-26 HW kubernetes-2
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-2)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+## Основное задание 
+
+Установил kubectl (sudo apt-get install kubectl)
+Установил Minukube [install](https://kubernetes.io/docs/tasks/tools/install-minikube/)
+Разверенм Minikube-кластер `minikube start`
+проверим  
+```bash
+kubectl get nodes 
+NAME       STATUS   ROLES    AGE   VERSION
+minikube   Ready    master   32m   v1.14.3
+```
+
+```bash
+kubectl version 
+Client Version: version.Info{Major:"1", Minor:"14", GitVersion:"v1.14.0", GitCommit:"641856db18352033a0d96dbc99153fa3b27298e5", GitTreeState:"clean", BuildDate:"2019-03-25T15:53:57Z", GoVersion:"go1.12.1", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"14", GitVersion:"v1.14.3", GitCommit:"5e53fd6bc17c0dec8434817e69b04a25d8ae0ff0", GitTreeState:"clean", BuildDate:"2019-06-06T01:36:19Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"linux/amd64"}
+```
+
+Запустим в Minikube ui-компоненту. `kubectl apply -f ui-deployment.yml`
+пробросим сетевые порты 
+```
+kubectl get pods --selector component=ui
+kubectl port-forward <pod-name> 8080:9292
+```
+запустим comment `kubectl apply -f comment-deployment.yml`
+`kubectl get pods --selector component=comment`
+
+создадим и запустим post `kubectl get pods --selector component=post`
+`kubectl get deployment`
+слушает 5000 порт
+
+
+
+
+
+
+
+
 # Lesson-25 HW kubernetes-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
