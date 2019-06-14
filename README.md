@@ -8,7 +8,7 @@
 
 Установил kubectl (sudo apt-get install kubectl)
 Установил Minukube [install](https://kubernetes.io/docs/tasks/tools/install-minikube/)
-Разверенм Minikube-кластер `minikube start`
+Разверенм Minikube-кластер `minikube start --kubernetes-version v1.14.0`
 проверим  
 ```bash
 kubectl get nodes 
@@ -29,15 +29,54 @@ kubectl get pods --selector component=ui
 kubectl port-forward <pod-name> 8080:9292
 ```
 запустим comment `kubectl apply -f comment-deployment.yml`
-`kubectl get pods --selector component=comment`
+`kubectl get pods --selector component=comment` -
 
-создадим и запустим post `kubectl get pods --selector component=post`
+создадим и запустим post `kubectl apply -f post-deployment.yml`
+`kubectl get pods --selector component=post`
 `kubectl get deployment`
 слушает 5000 порт
 
+создадим и запустим mongo `kubectl apply -f mongo-deployment.yml`
 
+### Services
+В текущем состоянии приложение не будет работать, так его компоненты ещё не знают как найти друг друга. 
+Для связи компонент между собой и с внешним миром используется объект `Service` - абстракция, которая определяет набор POD-ов (Endpoints) и способ доступа к ним
 
+Создадим по объекту Service для `ui-service.yml`, `post-service.yml` и `comment-service.yml`
 
+  По label-ам должны были быть найдены соответствующие POD-ы
+  ```bash
+  $ kubectl describe service post | grep Endpoints
+  Endpoints:         172.17.0.12:5000,172.17.0.5:5000,172.17.0.8:5000
+  ```
+  Список POD-ов
+  ```bash  
+  $ kubectl get pods   
+
+  NAME                       READY   STATUS    RESTARTS   AGE
+comment-c686fdd8f-8gwt7   1/1     Running   0          4m3s
+comment-c686fdd8f-sbtpk   1/1     Running   0          4m3s
+comment-c686fdd8f-vh465   1/1     Running   0          4m3s
+mongo-7dcc86dc67-pbkp2    1/1     Running   0          4m3s
+post-897ff9bf7-29csn      1/1     Running   0          4m3s
+post-897ff9bf7-gmmkq      1/1     Running   0          4m3s
+post-897ff9bf7-jd5m5      1/1     Running   0          4m3s
+ui-78f587fbcc-4qlt8       1/1     Running   0          4m2s
+ui-78f587fbcc-d2gqb       1/1     Running   0          4m2s
+ui-78f587fbcc-sfn8x       1/1     Running   0          4m2s
+
+  ```
+А изнутри любого POD-а должно разрешаться
+  ```bash
+  $ kubectl exec -ti comment-c686fdd8f-8gwt7 nslookup comment
+  nslookup: can't resolve '(null)': Name does not resolve
+
+  Name:      comment
+  Address 1: 10.101.151.179 comment.default.svc.cluster.local
+  ```
+Создадим `mongodb-service.yml` применим `kubectl apply -f mongodb-service.yml`
+
+Проверяем: пробрасываем порт на ui pod `kubectl port-forward ui-78f587fbcc-4qlt8 9292:9292`
 
 
 
@@ -59,6 +98,7 @@ deployment.apps/ui-deployment created
 
 ▶ kubectl get pods
 NAME                                  READY   STATUS    RESTARTS   AGE
+
 busybox-bd8fb7cbd-gxq79               1/1     Running   0          27m
 comment-deployment-55dd6c56b6-rzgxf   1/1     Running   0          2m5s
 mongo-deployment-6895dffdf4-hhr9p     1/1     Running   0          2m5s
