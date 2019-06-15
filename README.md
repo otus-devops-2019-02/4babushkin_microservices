@@ -78,8 +78,17 @@ ui-78f587fbcc-sfn8x       1/1     Running   0          4m2s
 
 Проверяем: пробрасываем порт на ui pod `kubectl port-forward ui-78f587fbcc-4qlt8 9292:9292`
 
+обеспечимм доступ к ui-сервису снаружи. Minikube может выдавать web-странцы с сервисами
+которые были помечены типом NodePort
 
+`minikube service ui`
 
+Посмотрите на список сервисов:
+`$ minikube service list`
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml
+
+kubectl port-forward kubernetes-dashboard-5f7b999d65-kztzn 8080:8443 -n kube-system
 
 # Lesson-25 HW kubernetes-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
