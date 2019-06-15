@@ -7,7 +7,9 @@
 ## Основное задание 
 
 Установил kubectl (sudo apt-get install kubectl)
-Установил Minukube [install](https://kubernetes.io/docs/tasks/tools/install-minikube/)
+
+Установил Minikube [install](https://kubernetes.io/docs/tasks/tools/install-minikube/)
+
 Разверенм Minikube-кластер `minikube start --kubernetes-version v1.14.0`
 проверим  
 ```bash
@@ -23,17 +25,20 @@ Server Version: version.Info{Major:"1", Minor:"14", GitVersion:"v1.14.3", GitCom
 ```
 
 Запустим в Minikube ui-компоненту. `kubectl apply -f ui-deployment.yml`
-пробросим сетевые порты 
+
+пробросим сетевые порты что бы открыть в браузере http://localhost:8080
 ```
 kubectl get pods --selector component=ui
 kubectl port-forward <pod-name> 8080:9292
 ```
+
 запустим comment `kubectl apply -f comment-deployment.yml`
 `kubectl get pods --selector component=comment` -
 
 создадим и запустим post `kubectl apply -f post-deployment.yml`
 `kubectl get pods --selector component=post`
 `kubectl get deployment`
+
 слушает 5000 порт
 
 создадим и запустим mongo `kubectl apply -f mongo-deployment.yml`
@@ -86,9 +91,86 @@ ui-78f587fbcc-sfn8x       1/1     Running   0          4m2s
 Посмотрите на список сервисов:
 `$ minikube service list`
 
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml
+Minikube также имеет в комплекте несколько стандартных аддонов
 
-kubectl port-forward kubernetes-dashboard-5f7b999d65-kztzn 8080:8443 -n kube-system
+Получить список расширений:
+```bash
+▶ minikube addons list
+- addon-manager: enabled
+- dashboard: disabled
+- default-storageclass: enabled
+- efk: disabled
+- freshpod: disabled
+- gvisor: disabled
+- heapster: disabled
+- ingress: disabled
+- logviewer: disabled
+- metrics-server: disabled
+- nvidia-driver-installer: disabled
+- nvidia-gpu-device-plugin: disabled
+- registry: disabled
+- registry-creds: disabled
+- storage-provisioner: enabled
+- storage-provisioner-gluster: disabled
+```
+
+включем `dashboard` он запускается в Namespace `kube-system`
+```bash
+minikume dashboard
+
+minikube service kubernetes-dashboard -n kube-system
+```
+
+Действия что бы запустить наше приложение 
+```bash
+▶ minikube start
+
+▶ kubectl apply -f reddit/dev-namespace.yml -n dev -f reddit/
+namespace/dev created
+deployment.apps/comment created
+service/comment-db created
+service/comment created
+namespace/dev unchanged
+deployment.apps/mongo created
+service/mongodb created
+deployment.apps/post created
+service/post-db created
+service/post created
+deployment.apps/ui created
+service/ui created
+
+▶ kubectl get pods -n dev                                    
+NAME                      READY   STATUS    RESTARTS   AGE
+comment-c686fdd8f-dzctv   1/1     Running   0          71s
+comment-c686fdd8f-p5tlm   1/1     Running   0          71s
+comment-c686fdd8f-phgl9   1/1     Running   0          71s
+mongo-7dcc86dc67-v5f4t    1/1     Running   0          71s
+post-897ff9bf7-5k5g8      1/1     Running   0          71s
+post-897ff9bf7-brs28      1/1     Running   0          71s
+post-897ff9bf7-q6cf7      1/1     Running   0          71s
+ui-64d957c45-7b9gz        1/1     Running   0          71s
+ui-64d957c45-85n4w        1/1     Running   0          71s
+ui-64d957c45-dg6k5        1/1     Running   0          71s
+
+▶ minikube service list 
+|-------------|----------------------|-----------------------------|
+|  NAMESPACE  |         NAME         |             URL             |
+|-------------|----------------------|-----------------------------|
+| default     | kubernetes           | No node port                |
+| dev         | comment              | No node port                |
+| dev         | comment-db           | No node port                |
+| dev         | mongodb              | No node port                |
+| dev         | post                 | No node port                |
+| dev         | post-db              | No node port                |
+| dev         | ui                   | http://192.168.99.100:32092 |
+| kube-system | kube-dns             | No node port                |
+| kube-system | kubernetes-dashboard | No node port                |
+|-------------|----------------------|-----------------------------|
+
+```
+
+
+
 
 # Lesson-25 HW kubernetes-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
@@ -118,25 +200,6 @@ untrusted                             1/1     Running   0          15m
 
 ```
 
- minikube service list 
-|-------------|----------------------|--------------|
-|  NAMESPACE  |         NAME         |     URL      |
-|-------------|----------------------|--------------|
-| default     | comment              | No node port |
-| default     | comment-db           | No node port |
-| default     | kubernetes           | No node port |
-| default     | mongodb              | No node port |
-| default     | post                 | No node port |
-| default     | post-db              | No node port |
-| default     | ui                   | No node port |
-| dev         | comment              | No node port |
-| dev         | comment-db           | No node port |
-| dev         | mongodb              | No node port |
-| dev         | post                 | No node port |
-| dev         | post-db              | No node port |
-| kube-system | kube-dns             | No node port |
-| kube-system | kubernetes-dashboard | No node port |
-|-------------|----------------------|--------------|
 
 # Lesson-23 HW logging-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=logging-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
