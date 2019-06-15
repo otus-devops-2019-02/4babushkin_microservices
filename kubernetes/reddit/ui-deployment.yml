@@ -20,5 +20,10 @@ spec:
         component: ui
     spec:
       containers:
-      - image: chromko/ui
+      - image: 4babushkin/ui
         name: ui
+        env:
+        - name: ENV
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace

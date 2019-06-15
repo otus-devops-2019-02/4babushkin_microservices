@@ -118,6 +118,25 @@ untrusted                             1/1     Running   0          15m
 
 ```
 
+ minikube service list 
+|-------------|----------------------|--------------|
+|  NAMESPACE  |         NAME         |     URL      |
+|-------------|----------------------|--------------|
+| default     | comment              | No node port |
+| default     | comment-db           | No node port |
+| default     | kubernetes           | No node port |
+| default     | mongodb              | No node port |
+| default     | post                 | No node port |
+| default     | post-db              | No node port |
+| default     | ui                   | No node port |
+| dev         | comment              | No node port |
+| dev         | comment-db           | No node port |
+| dev         | mongodb              | No node port |
+| dev         | post                 | No node port |
+| dev         | post-db              | No node port |
+| kube-system | kube-dns             | No node port |
+| kube-system | kubernetes-dashboard | No node port |
+|-------------|----------------------|--------------|
 
 # Lesson-23 HW logging-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=logging-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
