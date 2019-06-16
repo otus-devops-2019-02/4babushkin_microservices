@@ -58,19 +58,21 @@ kubectl port-forward <pod-name> 8080:9292
   ```bash  
   $ kubectl get pods   
 
-  NAME                       READY   STATUS    RESTARTS   AGE
-comment-c686fdd8f-8gwt7   1/1     Running   0          4m3s
-comment-c686fdd8f-sbtpk   1/1     Running   0          4m3s
-comment-c686fdd8f-vh465   1/1     Running   0          4m3s
-mongo-7dcc86dc67-pbkp2    1/1     Running   0          4m3s
-post-897ff9bf7-29csn      1/1     Running   0          4m3s
-post-897ff9bf7-gmmkq      1/1     Running   0          4m3s
-post-897ff9bf7-jd5m5      1/1     Running   0          4m3s
-ui-78f587fbcc-4qlt8       1/1     Running   0          4m2s
-ui-78f587fbcc-d2gqb       1/1     Running   0          4m2s
-ui-78f587fbcc-sfn8x       1/1     Running   0          4m2s
+    NAME                       READY   STATUS    RESTARTS   AGE
+  comment-c686fdd8f-8gwt7   1/1     Running   0          4m3s
+  comment-c686fdd8f-sbtpk   1/1     Running   0          4m3s
+  comment-c686fdd8f-vh465   1/1     Running   0          4m3s
+  mongo-7dcc86dc67-pbkp2    1/1     Running   0          4m3s
+  post-897ff9bf7-29csn      1/1     Running   0          4m3s
+  post-897ff9bf7-gmmkq      1/1     Running   0          4m3s
+  post-897ff9bf7-jd5m5      1/1     Running   0          4m3s
+  ui-78f587fbcc-4qlt8       1/1     Running   0          4m2s
+  ui-78f587fbcc-d2gqb       1/1     Running   0          4m2s
+  ui-78f587fbcc-sfn8x       1/1     Running   0          4m2s
 
   ```
+`kubectl get pods --all-namespaces` - Получить список подов во всех пространствах имен
+
 А изнутри любого POD-а должно разрешаться
   ```bash
   $ kubectl exec -ti comment-c686fdd8f-8gwt7 nslookup comment
@@ -121,6 +123,7 @@ minikume dashboard
 minikube service kubernetes-dashboard -n kube-system
 ```
 
+
 Действия что бы запустить наше приложение 
 ```bash
 ▶ minikube start
@@ -169,8 +172,44 @@ ui-64d957c45-dg6k5        1/1     Running   0          71s
 
 ```
 
+### GKE
+* Создали кластер 
+* Подключились `gcloud container clusters get-credentials standard-cluster-1 --zone europe-west1-d --project docker-239201`
+* `kubectl config view` - Получить текущий конфиг кластера
+* ```bash
+  ▶ kubectl config current-context
+    gke_docker-239201_europe-west1-d_standard-cluster-1
+    ```
+* `kubectl apply -f reddit/dev-namespace.yml -n dev -f reddit/` - запустим наше приложение
+* настроил брендмауэр на порты **tcp:30000-32767**
+* Найдите внешний IP-адрес
+  ```bash
+  ▶ kubectl get nodes -o wide
+  NAME                                                STATUS   ROLES    AGE   VERSION         INTERNAL-IP   EXTERNAL-IP     OS-IMAGE                             KERNEL-VERSION   CONTAINER-RUNTIME
+  gke-standard-cluster-1-default-pool-465217a4-9xdg   Ready    <none>   10m   v1.12.8-gke.6   10.132.0.46   34.77.13.248    Container-Optimized OS from Google   4.14.119+        docker://17.3.2
+  gke-standard-cluster-1-default-pool-465217a4-p9s9   Ready    <none>   10m   v1.12.8-gke.6   10.132.0.47   34.77.170.166   Container-Optimized OS from Google   4.14.119+        docker://17.3.2
+  ```
+* Найдем порт публикации сервиса ui
+  ```bash
+  ▶ kubectl describe service ui -n dev | grep NodePort
+  Type:                     NodePort
+  NodePort:                 <unset>  32092/TCP
+  ```
+* запустил Dashboard для кластера
+  * `kubectl proxy`
+  * заходим в dashboard http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login
+  * Нужно нашему Service Account назначить роль с достаточными правами на просмотр информации о кластере `kubectl create clusterrolebinding kubernetes-dashboard  --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard`
+  * Теперь все ок
 
 
+## Задание со *
+2) Создал YAML-манифесты для описания созданных сущностей для включения dashboard. `kubernetes-dashboard-rolebinding.yaml`
+   - Если запустить `kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard` c параметром `-o yaml` то получим нужный нам YAML файл
+   - проверяем dashboard работает 
+      - `kubectl delete -f reddit/dev-namespace.yml -n dev -f reddit/` - удаляем
+      - `kubectl apply -f reddit/dev-namespace.yml -n dev -f reddit/` - создаем
+
+![scren_kube2.png](/kubernetes/scren_kube2.png)
 
 # Lesson-25 HW kubernetes-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
