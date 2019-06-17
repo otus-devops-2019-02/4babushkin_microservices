@@ -204,6 +204,7 @@ ui-64d957c45-dg6k5        1/1     Running   0          71s
 
 ## Задание со * 
 1) Нагуглил https://blog.pactosystems.com/kubernetes-with-terraform-on-google-cloud/
+   * Развернём Kubenetes-кластер в GKE с помощью Terraform - `terraform apply`
 2) Создал YAML-манифесты для описания созданных сущностей для включения dashboard. `kubernetes-dashboard-rolebinding.yaml`
    - Если запустить `kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard` c параметром `-o yaml` то получим нужный нам YAML файл
    - проверяем dashboard работает 
