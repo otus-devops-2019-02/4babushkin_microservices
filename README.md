@@ -206,10 +206,27 @@ ui-64d957c45-dg6k5        1/1     Running   0          71s
 1) Нагуглил https://blog.pactosystems.com/kubernetes-with-terraform-on-google-cloud/
    * Развернём Kubenetes-кластер в GKE с помощью Terraform - `terraform apply`
 2) Создал YAML-манифесты для описания созданных сущностей для включения dashboard. `kubernetes-dashboard-rolebinding.yaml`
-   - Если запустить `kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard` c параметром `-o yaml` то получим нужный нам YAML файл
+   - Если запустить `kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard` c параметром `-o yaml` то получим нужный нам YAML файл `kubernetes/reddit/kubernetes-dashboard-rolebinding.yaml`
    - проверяем dashboard работает 
       - `kubectl delete -f reddit/dev-namespace.yml -n dev -f reddit/` - удаляем
       - `kubectl apply -f reddit/dev-namespace.yml -n dev -f reddit/` - создаем
+
+## Подведем итоги
+  1) создаем кластер 
+      ```bash
+      terraform init
+      teraform plan
+      terraform apply
+      ```
+  2) Запускаем наше приложение
+      ```bash
+      kubectl apply -f reddit/dev-namespace.yml -n dev -f reddit/
+      ```
+  3) Оперделчем ip `kubectl get nodes -o wide` и порт `kubectl describe service ui -n dev | grep NodePort`. http://34.77.13.248:32092
+  4) Открываем дашборд http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login
+     
+  Все хорошо но при удалени мы теряем нашу БД
+
 
 ![scren_kube2.png](/kubernetes/scren_kube2.png)
 
