@@ -1,6 +1,235 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+# Lesson-26 HW kubernetes-2
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-2)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+## Основное задание 
+
+Установил kubectl (sudo apt-get install kubectl)
+
+Установил Minikube [install](https://kubernetes.io/docs/tasks/tools/install-minikube/)
+
+Разверенм Minikube-кластер `minikube start --kubernetes-version v1.14.0`
+проверим  
+```bash
+kubectl get nodes 
+NAME       STATUS   ROLES    AGE   VERSION
+minikube   Ready    master   32m   v1.14.3
+```
+
+```bash
+kubectl version 
+Client Version: version.Info{Major:"1", Minor:"14", GitVersion:"v1.14.0", GitCommit:"641856db18352033a0d96dbc99153fa3b27298e5", GitTreeState:"clean", BuildDate:"2019-03-25T15:53:57Z", GoVersion:"go1.12.1", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"14", GitVersion:"v1.14.3", GitCommit:"5e53fd6bc17c0dec8434817e69b04a25d8ae0ff0", GitTreeState:"clean", BuildDate:"2019-06-06T01:36:19Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"linux/amd64"}
+```
+
+Запустим в Minikube ui-компоненту. `kubectl apply -f ui-deployment.yml`
+
+пробросим сетевые порты что бы открыть в браузере http://localhost:8080
+```
+kubectl get pods --selector component=ui
+kubectl port-forward <pod-name> 8080:9292
+```
+
+запустим comment `kubectl apply -f comment-deployment.yml`
+`kubectl get pods --selector component=comment` -
+
+создадим и запустим post `kubectl apply -f post-deployment.yml`
+`kubectl get pods --selector component=post`
+`kubectl get deployment`
+
+слушает 5000 порт
+
+создадим и запустим mongo `kubectl apply -f mongo-deployment.yml`
+
+### Services
+В текущем состоянии приложение не будет работать, так его компоненты ещё не знают как найти друг друга. 
+Для связи компонент между собой и с внешним миром используется объект `Service` - абстракция, которая определяет набор POD-ов (Endpoints) и способ доступа к ним
+
+Создадим по объекту Service для `ui-service.yml`, `post-service.yml` и `comment-service.yml`
+
+  По label-ам должны были быть найдены соответствующие POD-ы
+  ```bash
+  $ kubectl describe service post | grep Endpoints
+  Endpoints:         172.17.0.12:5000,172.17.0.5:5000,172.17.0.8:5000
+  ```
+  Список POD-ов
+  ```bash  
+  $ kubectl get pods   
+
+    NAME                       READY   STATUS    RESTARTS   AGE
+  comment-c686fdd8f-8gwt7   1/1     Running   0          4m3s
+  comment-c686fdd8f-sbtpk   1/1     Running   0          4m3s
+  comment-c686fdd8f-vh465   1/1     Running   0          4m3s
+  mongo-7dcc86dc67-pbkp2    1/1     Running   0          4m3s
+  post-897ff9bf7-29csn      1/1     Running   0          4m3s
+  post-897ff9bf7-gmmkq      1/1     Running   0          4m3s
+  post-897ff9bf7-jd5m5      1/1     Running   0          4m3s
+  ui-78f587fbcc-4qlt8       1/1     Running   0          4m2s
+  ui-78f587fbcc-d2gqb       1/1     Running   0          4m2s
+  ui-78f587fbcc-sfn8x       1/1     Running   0          4m2s
+
+  ```
+`kubectl get pods --all-namespaces` - Получить список подов во всех пространствах имен
+
+А изнутри любого POD-а должно разрешаться
+  ```bash
+  $ kubectl exec -ti comment-c686fdd8f-8gwt7 nslookup comment
+  nslookup: can't resolve '(null)': Name does not resolve
+
+  Name:      comment
+  Address 1: 10.101.151.179 comment.default.svc.cluster.local
+  ```
+Создадим `mongodb-service.yml` применим `kubectl apply -f mongodb-service.yml`
+
+Проверяем: пробрасываем порт на ui pod `kubectl port-forward ui-78f587fbcc-4qlt8 9292:9292`
+
+обеспечимм доступ к ui-сервису снаружи. Minikube может выдавать web-странцы с сервисами
+которые были помечены типом NodePort
+
+`minikube service ui`
+
+Посмотрите на список сервисов:
+`$ minikube service list`
+
+Minikube также имеет в комплекте несколько стандартных аддонов
+
+Получить список расширений:
+```bash
+▶ minikube addons list
+- addon-manager: enabled
+- dashboard: disabled
+- default-storageclass: enabled
+- efk: disabled
+- freshpod: disabled
+- gvisor: disabled
+- heapster: disabled
+- ingress: disabled
+- logviewer: disabled
+- metrics-server: disabled
+- nvidia-driver-installer: disabled
+- nvidia-gpu-device-plugin: disabled
+- registry: disabled
+- registry-creds: disabled
+- storage-provisioner: enabled
+- storage-provisioner-gluster: disabled
+```
+
+включем `dashboard` он запускается в Namespace `kube-system`
+```bash
+minikume dashboard
+
+minikube service kubernetes-dashboard -n kube-system
+```
+
+
+Действия что бы запустить наше приложение 
+```bash
+▶ minikube start
+
+▶ kubectl apply -f reddit/dev-namespace.yml -n dev -f reddit/
+namespace/dev created
+deployment.apps/comment created
+service/comment-db created
+service/comment created
+namespace/dev unchanged
+deployment.apps/mongo created
+service/mongodb created
+deployment.apps/post created
+service/post-db created
+service/post created
+deployment.apps/ui created
+service/ui created
+
+▶ kubectl get pods -n dev                                    
+NAME                      READY   STATUS    RESTARTS   AGE
+comment-c686fdd8f-dzctv   1/1     Running   0          71s
+comment-c686fdd8f-p5tlm   1/1     Running   0          71s
+comment-c686fdd8f-phgl9   1/1     Running   0          71s
+mongo-7dcc86dc67-v5f4t    1/1     Running   0          71s
+post-897ff9bf7-5k5g8      1/1     Running   0          71s
+post-897ff9bf7-brs28      1/1     Running   0          71s
+post-897ff9bf7-q6cf7      1/1     Running   0          71s
+ui-64d957c45-7b9gz        1/1     Running   0          71s
+ui-64d957c45-85n4w        1/1     Running   0          71s
+ui-64d957c45-dg6k5        1/1     Running   0          71s
+
+▶ minikube service list 
+|-------------|----------------------|-----------------------------|
+|  NAMESPACE  |         NAME         |             URL             |
+|-------------|----------------------|-----------------------------|
+| default     | kubernetes           | No node port                |
+| dev         | comment              | No node port                |
+| dev         | comment-db           | No node port                |
+| dev         | mongodb              | No node port                |
+| dev         | post                 | No node port                |
+| dev         | post-db              | No node port                |
+| dev         | ui                   | http://192.168.99.100:32092 |
+| kube-system | kube-dns             | No node port                |
+| kube-system | kubernetes-dashboard | No node port                |
+|-------------|----------------------|-----------------------------|
+
+```
+
+### GKE
+* Создали кластер 
+* Подключились `gcloud container clusters get-credentials standard-cluster-1 --zone europe-west1-d --project docker-239201`
+* `kubectl config view` - Получить текущий конфиг кластера
+* ```bash
+  ▶ kubectl config current-context
+    gke_docker-239201_europe-west1-d_standard-cluster-1
+    ```
+* `kubectl apply -f reddit/dev-namespace.yml -n dev -f reddit/` - запустим наше приложение
+* настроил брендмауэр на порты **tcp:30000-32767**
+* Найдите внешний IP-адрес
+  ```bash
+  ▶ kubectl get nodes -o wide
+  NAME                                                STATUS   ROLES    AGE   VERSION         INTERNAL-IP   EXTERNAL-IP     OS-IMAGE                             KERNEL-VERSION   CONTAINER-RUNTIME
+  gke-standard-cluster-1-default-pool-465217a4-9xdg   Ready    <none>   10m   v1.12.8-gke.6   10.132.0.46   34.77.13.248    Container-Optimized OS from Google   4.14.119+        docker://17.3.2
+  gke-standard-cluster-1-default-pool-465217a4-p9s9   Ready    <none>   10m   v1.12.8-gke.6   10.132.0.47   34.77.170.166   Container-Optimized OS from Google   4.14.119+        docker://17.3.2
+  ```
+* Найдем порт публикации сервиса ui
+  ```bash
+  ▶ kubectl describe service ui -n dev | grep NodePort
+  Type:                     NodePort
+  NodePort:                 <unset>  32092/TCP
+  ```
+* запустил Dashboard для кластера
+  * `kubectl proxy`
+  * заходим в dashboard http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login
+  * Нужно нашему Service Account назначить роль с достаточными правами на просмотр информации о кластере `kubectl create clusterrolebinding kubernetes-dashboard  --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard`
+  * Теперь все ок
+
+
+## Задание со * 
+1) Нагуглил https://blog.pactosystems.com/kubernetes-with-terraform-on-google-cloud/
+   * Развернём Kubenetes-кластер в GKE с помощью Terraform - `terraform apply`
+2) Создал YAML-манифесты для описания созданных сущностей для включения dashboard. `kubernetes-dashboard-rolebinding.yaml`
+   - Если запустить `kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard` c параметром `-o yaml` то получим нужный нам YAML файл `kubernetes/reddit/kubernetes-dashboard-rolebinding.yaml`
+   - проверяем dashboard работает 
+      - `kubectl delete -f reddit/dev-namespace.yml -n dev -f reddit/` - удаляем
+      - `kubectl apply -f reddit/dev-namespace.yml -n dev -f reddit/` - создаем
+
+## Подведем итоги
+  1) создаем кластер 
+      ```bash
+      terraform init
+      teraform plan
+      terraform apply
+      ```
+  2) Запускаем наше приложение
+      ```bash
+      kubectl apply -f reddit/dev-namespace.yml -n dev -f reddit/
+      ```
+  3) Оперделчем ip `kubectl get nodes -o wide` и порт `kubectl describe service ui -n dev | grep NodePort`. http://34.77.13.248:32092
+  4) Открываем дашборд http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login
+     
+  Все хорошо но при удалени мы теряем нашу БД
+
+
+![scren_kube2.png](/kubernetes/scren_kube2.png)
+
 # Lesson-25 HW kubernetes-1
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-1)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
@@ -18,6 +247,7 @@ deployment.apps/ui-deployment created
 
 ▶ kubectl get pods
 NAME                                  READY   STATUS    RESTARTS   AGE
+
 busybox-bd8fb7cbd-gxq79               1/1     Running   0          27m
 comment-deployment-55dd6c56b6-rzgxf   1/1     Running   0          2m5s
 mongo-deployment-6895dffdf4-hhr9p     1/1     Running   0          2m5s
