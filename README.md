@@ -1,6 +1,72 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+# Lesson-27 HW kubernetes-3
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-3)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+## Основное задание
+
+24
+kubectl apply -f ui-service.yml -n dev
+service/ui configured
+
+
+kubectl get service -n dev --selector component=ui
+NAME   TYPE           CLUSTER-IP     EXTERNAL-IP    PORT(S)        AGE
+ui     LoadBalancer   10.11.249.46   35.189.226.6   80:32092/TCP   11m
+
+34
+kubectl apply -f ui-ingress.yml -n dev
+ingress.extensions/ui created
+
+36
+kubectl get ingress -n dev
+NAME   HOSTS   ADDRESS         PORTS   AGE
+ui     *       34.98.124.193   80      7m57s
+
+
+42
+```bash
+ kubectl get ingress -n dev                                 
+NAME   HOSTS   ADDRESS         PORTS   AGE
+ui     *       34.98.124.193   80      19m
+
+
+ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=34.98.124.193"
+Can't load /home/vova/.rnd into RNG
+139787996582336:error:2406F079:random number generator:RAND_load_file:Cannot open file:../crypto/rand/randfile.c:88:Filename=/home/vova/.rnd
+Generating a RSA private key
+...........................+++++
+.....+++++
+writing new private key to 'tls.key'
+-----
+
+
+ kubectl create secret tls ui-ingress --key tls.key --cert tls.crt -n dev
+secret/ui-ingress created
+
+
+ kubectl describe secret ui-ingress -n dev
+Name:         ui-ingress
+Namespace:    dev
+Labels:       <none>
+Annotations:  <none>
+
+Type:  kubernetes.io/tls
+
+Data
+====
+tls.crt:  1123 bytes
+tls.key:  1704 bytes
+```
+
+## Задание со * 
+
+kubectl create secret tls ui-ingress --key tls.key --cert tls.crt -n dev -o yaml
+Опишисал создаваемый объект Secret в виде Kubernetes-манифеста `ui-tls-secret.yaml`
+
+
+
 # Lesson-26 HW kubernetes-2
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-2)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
