@@ -60,6 +60,37 @@ tls.crt:  1123 bytes
 tls.key:  1704 bytes
 ```
 
+49
+Network Policy
+```bash
+gcloud beta container clusters list
+NAME                      LOCATION        MASTER_VERSION  MASTER_IP     MACHINE_TYPE  NODE_VERSION  NUM_NODES  STATUS
+reddit-cluster-terraform  europe-west1-d  1.12.8-gke.6    35.195.68.42  g1-small      1.12.8-gke.6  2          RUNNING
+
+gcloud beta container clusters update reddit-cluster-terraform --zone=europe-west1-d --update-addons=NetworkPolicy=ENABLED
+Updating reddit-cluster-terraform...⠼                                                        
+
+gcloud beta container clusters update reddit-cluster-terraform --zone=europe-west1-d  --enable-network-policy
+```
+52
+ kubectl apply -f mongo-network-policy.yml -n dev
+networkpolicy.networking.k8s.io/deny-db-traffic created
+
+
+57
+Создадим диск в Google Cloud
+`gcloud compute disks create --size=25GB --zone=europe-west1-d reddit-mongo-disk`
+
+
+
+75
+kubectl get persistentvolume -n dev
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM                   STORAGECLASS   REASON   AGE
+pvc-17407488-928a-11e9-b456-42010a840213   10Gi       RWO            Delete           Bound       dev/mongo-pvc-dynamic   fast                    65s
+pvc-67c00113-9289-11e9-b456-42010a840213   15Gi       RWO            Delete           Bound       dev/mongo-pvc           standard                6m
+reddit-mongo-disk                          25Gi       RWO            Retain           Available                                                   7m2s
+
+
 ## Задание со * 
 
 kubectl create secret tls ui-ingress --key tls.key --cert tls.crt -n dev -o yaml
