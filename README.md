@@ -1,6 +1,191 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+# Lesson-27 HW kubernetes-3
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-3)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+## Основное задание
+
+**LoadBalancer**
+Тип LoadBalancer позволяет нам использовать внешний
+облачный балансировщик нагрузки как единую точку
+входа в наши сервисы, а не полагаться на IPTables и не
+открывать наружу весь кластер
+```bash
+$ kubectl apply -f ui-service.yml -n dev
+service/ui configured
+
+$ kubectl get service -n dev --selector component=ui
+NAME   TYPE           CLUSTER-IP     EXTERNAL-IP    PORT(S)        AGE
+ui     LoadBalancer   10.11.249.46   35.189.226.6   80:32092/TCP   11m
+```
+**Ingress**
+Для более удобного управления входящим
+снаружи трафиком и решения недостатков
+LoadBalancer можно использовать другой объект
+Kubernetes - Ingress.
+
+Ingress – это набор правил внутри кластера Kubernetes,
+предназначенных для того, чтобы входящие подключения
+могли достичь сервисов (Services)
+Сами по себе Ingress’ы это просто правила. Для их
+применения нужен Ingress Controller
+
+Для работы Ingress-ов необходим Ingress Controller.
+В отличие остальных контроллеров k8s - он не стартует
+вместе с кластером.
+
+Создадим Ingress для сервиса UI
+```bash
+$ kubectl apply -f ui-ingress.yml -n dev
+ingress.extensions/ui created
+```
+Посмотрим в сам кластер:
+```bash
+$ kubectl get ingress -n dev
+NAME   HOSTS   ADDRESS         PORTS   AGE
+ui     *       34.98.124.193   80      7m57s
+```
+http://34.98.124.193
+
+**Secret**
+
+Теперь давайте защитим наш сервис с помощью TLS.
+Для начала вспомним Ingress IP
+Далее подготовим сертификат используя IP как CN
+```
+$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=34.98.124.193"
+Can't load /home/vova/.rnd into RNG
+139787996582336:error:2406F079:random number generator:RAND_load_file:Cannot open file:../crypto/rand/randfile.c:88:Filename=/home/vova/.rnd
+Generating a RSA private key
+...........................+++++
+.....+++++
+writing new private key to 'tls.key'
+-----
+```
+И загрузит сертификат в кластер kubernetes
+```bash
+$ kubectl create secret tls ui-ingress --key tls.key --cert tls.crt -n dev
+secret/ui-ingress created
+```
+Проверить можно командой
+```bash
+$ kubectl describe secret ui-ingress -n dev
+Name:         ui-ingress
+Namespace:    dev
+Labels:       <none>
+Annotations:  <none>
+
+Type:  kubernetes.io/tls
+
+Data
+====
+tls.crt:  1123 bytes
+tls.key:  1704 bytes
+```
+
+настроим Ingress на прием только HTTPS траффика `ui-ingress.yml`
+и применим 
+```
+$ kubectl apply -f ui-ingress.yml -n dev
+```
+
+
+**NetworkPolicy** - инструмент для декларативного описания потоков трафика.
+```bash
+$ gcloud beta container clusters list
+NAME                      LOCATION        MASTER_VERSION  MASTER_IP     MACHINE_TYPE  NODE_VERSION  NUM_NODES  STATUS
+reddit-cluster-terraform  europe-west1-d  1.12.8-gke.6    35.195.68.42  g1-small      1.12.8-gke.6  2          RUNNING
+```
+Включим network-policy для GKE
+```
+$ gcloud beta container clusters update reddit-cluster-terraform --zone=europe-west1-d --update-addons=NetworkPolicy=ENABLED
+Updating reddit-cluster-terraform...⠼                                                        
+
+$ gcloud beta container clusters update reddit-cluster-terraform --zone=europe-west1-d  --enable-network-policy
+```
+Создаем и Применяем политику `mongo-network-policy.yml`
+```bash
+$ kubectl apply -f mongo-network-policy.yml -n dev
+networkpolicy.networking.k8s.io/deny-db-traffic created
+```
+
+**Хранилище для базы**
+
+Создадим диск в Google Cloud
+
+```
+gcloud compute disks create --size=25GB --zone=europe-west1-d reddit-mongo-disk
+```
+**PersistentVolume**
+Используемый механизм Volume-ов можно сделать удобнее.
+Мы можем использовать не целый выделенный диск для
+каждого пода, а целый ресурс хранилища, общий для всего
+кластера.
+Тогда при запуске Stateful-задач в кластере, мы сможем
+запросить хранилище в виде такого же ресурса, как CPU или
+оперативная память.
+
+
+**PersistentVolumeClaim**
+75
+Подключим PVC к нашим Pod'ам `mongo-deployment.yml`
+
+Обновим описание нашего Deployment’а
+```
+$ kubectl apply -f mongo-deployment.yml -n dev
+```
+
+Динамическое выделение Volume'ов
+
+Создадим описание StorageClass’а `storage-fast.yml`
+
+Добавим StorageClass в кластер
+```
+$ kubectl apply -f storage-fast.yml -n dev
+```
+
+**PVC + StorageClass**
+
+Создадим описание PersistentVolumeClaim `mongo-claim-dynamic.yml`
+
+Добавим StorageClass в кластер
+```
+$ kubectl apply -f mongo-claim-dynamic.yml -n dev
+```
+Подключим PVC к нашим Pod'ам `mongo-deployment.yml`
+
+Обновим описание нашего Deployment'а
+```
+$ kubectl apply -f mongo-deployment.yml -n dev
+```
+Давайте посмотрит какие в итоге у нас получились
+PersistentVolume'ы
+```
+kubectl get persistentvolume -n dev
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM                   STORAGECLASS   REASON   AGE
+pvc-17407488-928a-11e9-b456-42010a840213   10Gi       RWO            Delete           Bound       dev/mongo-pvc-dynamic   fast                    65s
+pvc-67c00113-9289-11e9-b456-42010a840213   15Gi       RWO            Delete           Bound       dev/mongo-pvc           standard                6m
+reddit-mongo-disk                          25Gi       RWO            Retain           Available                                                   7m2s
+```
+
+## Задание со * 
+
+```
+kubectl create secret tls ui-ingress --key tls.key --cert tls.crt -n dev -o yaml
+```
+Описал создаваемый объект Secret в виде Kubernetes-манифеста `ui-tls-secret.yaml`
+
+## В итоге
+* создан Ingress Controller
+* созданы Ingress правила
+* сгенерирован и применен TLS сертификат
+* настроен LoadBalancer Service
+* сконфигурированы Network Policies
+* созданы PersistentVolumes
+* созданы PersistentVolumeClaims
+
+
 # Lesson-26 HW kubernetes-2
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-2)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
