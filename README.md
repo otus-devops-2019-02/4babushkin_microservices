@@ -1,6 +1,227 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+# Lesson-28 HW kubernetes-4
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-3)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+## Основное задание
+Helm - пакетный менеджер для Kubernetes.
+С его помощью мы будем:
+1. Стандартизировать поставку приложения в Kubernetes
+2. Декларировать инфраструктуру
+3. Деплоить новые версии приложения
+
+Запускаем кластер kubernetes через terraform `terraform apply`
+
+`gcloud container clusters get-credentials reddit-cluster-terraform --zone europe-west1-d --project docker-239201`
+
+$ kubectl apply -f tiller.yml
+
+Теперь запустим tiller-сервер
+```bash
+$ helm init --service-account tiller
+Creating /home/vova/.helm 
+Creating /home/vova/.helm/repository 
+Creating /home/vova/.helm/repository/cache 
+Creating /home/vova/.helm/repository/local 
+Creating /home/vova/.helm/plugins 
+Creating /home/vova/.helm/starters 
+Creating /home/vova/.helm/cache/archive 
+Creating /home/vova/.helm/repository/repositories.yaml 
+Adding stable repo with URL: https://kubernetes-charts.storage.googleapis.com 
+Adding local repo with URL: http://127.0.0.1:8879/charts 
+$HELM_HOME has been configured at /home/vova/.helm.
+
+Tiller (the Helm server-side component) has been installed into your Kubernetes Cluster.
+
+Please note: by default, Tiller is deployed with an insecure 'allow unauthenticated users' policy.
+To prevent this, run `helm init` with the --tiller-tls-verify flag.
+For more information on securing your installation see: https://docs.helm.sh/using_helm/#securing-your-helm-installation
+```
+Проверим
+```bash
+ kubectl get pods -n kube-system --selector app=helm
+NAME                             READY   STATUS    RESTARTS   AGE
+tiller-deploy-7b659b7fbd-2btvm   1/1     Running   0          95s
+```
+Установим Chart
+```bash
+  helm install --name test-ui-1 ui/
+NAME:   test-ui-1
+LAST DEPLOYED: Fri Jun 21 18:22:59 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/Pod(related)
+NAME                           READY  STATUS             RESTARTS  AGE
+test-ui-1-ui-5bc74fb486-dzhtd  0/1    ContainerCreating  0         0s
+test-ui-1-ui-5bc74fb486-rrlfj  0/1    ContainerCreating  0         0s
+test-ui-1-ui-5bc74fb486-x295c  0/1    ContainerCreating  0         0s
+
+==> v1/Service
+NAME          TYPE      CLUSTER-IP    EXTERNAL-IP  PORT(S)         AGE
+test-ui-1-ui  NodePort  10.11.246.42  <none>       9292:31629/TCP  0s
+
+==> v1beta1/Deployment
+NAME          READY  UP-TO-DATE  AVAILABLE  AGE
+test-ui-1-ui  0/3    3           0          0s
+
+==> v1beta1/Ingress
+NAME          HOSTS  ADDRESS  PORTS  AGE
+test-ui-1-ui  *      80       0s
+```
+
+Посмотрим, что получилось
+
+```bash
+  helm ls
+NAME     	REVISION	UPDATED                 	STATUS  	CHART   	APP VERSION	NAMESPACE
+test-ui-1	1       	Fri Jun 21 18:22:59 2019	DEPLOYED	ui-1.0.0	1          	default 
+```
+
+Установим несколько релизов ui
+```bash
+$ helm install ui --name ui-1
+$ helm install ui --name ui-2
+$ helm install ui --name ui-3
+```
+Должны появиться 3 ingress'а
+```
+kubectl get ingress
+NAME           HOSTS   ADDRESS         PORTS   AGE
+test-ui-1-ui   *       34.98.124.193   80      6m44s
+ui-1-ui        *       34.98.67.16     80      2m7s
+ui-2-ui        *       34.98.77.73     80      87s
+ui-3-ui        *       34.98.118.132   80      80s
+```
+
+Итоговая структура должна выглядеть так:
+```
+├── comment
+│   ├── Chart.yaml
+│   ├── templates
+│   │   ├── deployment.yaml
+│   │   ├── _helpers.tpl
+│   │   └── service.yaml
+│   └── values.yaml
+├── post
+│   ├── Chart.yaml
+│   ├── templates
+│   │   ├── deployment.yaml
+│   │   ├── _helpers.tpl
+│   │   └── service.yaml
+│   └── values.yaml
+├── reddit
+│   ├── Chart.yaml
+│   ├── requirements.yaml
+│   └── values.yaml
+└── ui
+    ├── Chart.yaml
+    ├── templates
+    │   ├── deployment.yaml
+    │   ├── _helpers.tpl
+    │   ├── ingress.yaml
+    │   └── service.yaml
+    └── values.yaml
+```
+С помощью механизма управления зависимостями создадим
+единый Chart reddit, который объединит наши компоненты
+
+Нужно загрузить зависимости (когда Chart’ не упакован в tgz
+архив)
+```
+helm dep update
+Hang tight while we grab the latest from your chart repositories...
+...Unable to get an update from the "local" chart repository (http://127.0.0.1:8879/charts):
+	Get http://127.0.0.1:8879/charts/index.yaml: dial tcp 127.0.0.1:8879: connect: connection refused
+...Successfully got an update from the "stable" chart repository
+Update Complete.
+Saving 3 charts
+Deleting outdated charts
+```
+Структура станет следующей:
+```
+├── charts
+│   ├── comment-1.0.0.tgz
+│   ├── post-1.0.0.tgz
+│   └── ui-1.0.0.tgz
+├── Chart.yaml
+├── requirements.lock
+├── requirements.yaml
+└── values.yaml
+```
+Установим наше приложение
+```
+helm install reddit --name reddit-test
+NAME:   reddit-test
+LAST DEPLOYED: Fri Jun 21 19:13:10 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/PersistentVolumeClaim
+NAME                 STATUS   VOLUME    CAPACITY  ACCESS MODES  STORAGECLASS  AGE
+reddit-test-mongodb  Pending  standard  2s
+
+==> v1/Pod(related)
+NAME                                  READY  STATUS             RESTARTS  AGE
+reddit-test-comment-6bc448ffc6-9rvjx  0/1    ContainerCreating  0         1s
+reddit-test-mongodb-75f4ff4bbf-g95l2  0/1    Pending            0         1s
+reddit-test-post-6c444777ff-9d4mt     0/1    ContainerCreating  0         1s
+reddit-test-ui-7b96b98d4c-gf8gw       0/1    ContainerCreating  0         1s
+reddit-test-ui-7b96b98d4c-jpwfn       0/1    ContainerCreating  0         1s
+reddit-test-ui-7b96b98d4c-lsdb6       0/1    ContainerCreating  0         1s
+
+==> v1/Secret
+NAME                 TYPE    DATA  AGE
+reddit-test-mongodb  Opaque  1     2s
+
+==> v1/Service
+NAME                 TYPE       CLUSTER-IP     EXTERNAL-IP  PORT(S)         AGE
+reddit-test-comment  ClusterIP  10.11.242.41   <none>       9292/TCP        2s
+reddit-test-mongodb  ClusterIP  10.11.254.109  <none>       27017/TCP       2s
+reddit-test-post     ClusterIP  10.11.249.194  <none>       5000/TCP        2s
+reddit-test-ui       NodePort   10.11.248.9    <none>       9292:30122/TCP  2s
+
+==> v1beta1/Deployment
+NAME                 READY  UP-TO-DATE  AVAILABLE  AGE
+reddit-test-mongodb  0/1    1           0          2s
+reddit-test-ui       0/3    3           0          2s
+
+==> v1beta1/Ingress
+NAME            HOSTS  ADDRESS  PORTS  AGE
+reddit-test-ui  *      80       2s
+
+==> v1beta2/Deployment
+NAME                 READY  UP-TO-DATE  AVAILABLE  AGE
+reddit-test-comment  0/1    1           0          2s
+reddit-test-post     0/1    1           0          2s
+```
+Найдем адрес
+```kubectl get ingress        
+NAME             HOSTS   ADDRESS         PORTS   AGE
+reddit-test-ui   *       34.98.124.193   80      18m
+```
+
+UI-сервис не знает как правильно
+ходить в post и comment сервисы. Ведь их имена теперь
+динамические и зависят от имен чартов В Dockerfile UI-сервиса уже заданы переменные окружения.
+Надо, чтобы они указывали на нужные бекенды
+Исправим `ui/deployments.yaml`
+
+После обновления UI - нужно обновить зависимости чарта reddit.
+```
+$ helm dep update ./reddit
+```
+Обновите релиз, установленный в k8s
+```
+$ helm upgrade <release-name> ./reddit
+```
+helm install reddit --dry-run --debug --name reddit-test
+
+helm del --purge reddit-test
+
 # Lesson-27 HW kubernetes-3
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-3)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
@@ -128,7 +349,6 @@ gcloud compute disks create --size=25GB --zone=europe-west1-d reddit-mongo-disk
 
 
 **PersistentVolumeClaim**
-75
 Подключим PVC к нашим Pod'ам `mongo-deployment.yml`
 
 Обновим описание нашего Deployment’а

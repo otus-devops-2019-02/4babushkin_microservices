@@ -6,7 +6,7 @@ variable "project" {
 }
 
 variable "region" {
-  default = "eu-west1-b"
+  default = "eu-west1-d"
 }
 
 variable "cluster_name" {
