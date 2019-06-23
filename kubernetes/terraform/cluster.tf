@@ -4,12 +4,10 @@
 resource "google_container_cluster" "cluster" {
   name               = "${var.cluster_name}"
   zone               = "${var.cluster_zone}"
-  min_master_version = "${var.cluster_k8s_version}"
+  #min_master_version = "${var.cluster_k8s_version}"
 
   addons_config {
 
-   
-    
     network_policy_config {
       disabled = true
     }
@@ -43,12 +41,6 @@ resource "google_container_cluster" "cluster" {
 
       machine_type = "${var.machine_type}"
 
-      # oauth_scopes = [
-      #   "https://www.googleapis.com/auth/compute",
-      #   "https://www.googleapis.com/auth/devstorage.read_only",
-      #   "https://www.googleapis.com/auth/logging.write",
-      #   "https://www.googleapis.com/auth/monitoring",
-      # ]
       oauth_scopes = [
         "https://www.googleapis.com/auth/devstorage.read_only",
         "https://www.googleapis.com/auth/logging.write",
@@ -58,7 +50,6 @@ resource "google_container_cluster" "cluster" {
         "https://www.googleapis.com/auth/trace.append",
         "https://www.googleapis.com/auth/compute",
       ]
-
 
     }
   }
