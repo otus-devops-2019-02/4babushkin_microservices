@@ -220,16 +220,16 @@ $ helm upgrade <release-name> ./reddit
 ```
 
 
-helm install reddit --dry-run --debug --name reddit-test
-
-helm del --purge reddit-test
-
- kubectl describe pod <pod-name>
-
+`helm install reddit --dry-run --debug --name reddit-test` - дебаг
+`helm del --purge reddit-test` - удалить
+kubectl describe pod <pod-name>
 `kubectl get pods --all-namespaces` - Получить список подов во всех пространствах имен
 
 
 ## gitlab
+развернули свой Gitlab в кластере;
+
+
 git init
 git remote add origin http://gitlab-gitlab/4babushkin/ui.git
 git add .
