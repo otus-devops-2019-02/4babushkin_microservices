@@ -218,6 +218,8 @@ $ helm dep update ./reddit
 ```
 $ helm upgrade <release-name> ./reddit
 ```
+
+
 helm install reddit --dry-run --debug --name reddit-test
 
 helm del --purge reddit-test
@@ -225,6 +227,33 @@ helm del --purge reddit-test
  kubectl describe pod <pod-name>
 
 `kubectl get pods --all-namespaces` - Получить список подов во всех пространствах имен
+
+
+## gitlab
+git init
+git remote add origin http://gitlab-gitlab/4babushkin/ui.git
+git add .
+git commit -m "Initial commit"
+git push -u origin master
+
+git init
+git remote add origin http://gitlab-gitlab/4babushkin/comment.git
+git add .
+git commit -m "Initial commit"
+git push -u origin master
+
+git init
+git remote add origin http://gitlab-gitlab/4babushkin/post.git
+git add .
+git commit -m "Initial commit"
+git push -u origin master
+
+git init
+git remote add origin http://gitlab-gitlab/4babushkin/reddit-deploy.git
+git add .
+git commit -m "Initial commit"
+git push -u origin master
+
 
 # Lesson-27 HW kubernetes-3
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-3)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
