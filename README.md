@@ -14,9 +14,9 @@ Helm - пакетный менеджер для Kubernetes.
 Запускаем кластер kubernetes через terraform `terraform apply`
 
 `gcloud container clusters get-credentials reddit-cluster-terraform --zone europe-west1-d --project docker-239201`
-
+```
 $ kubectl apply -f tiller.yml
-
+```
 Теперь запустим tiller-сервер
 ```bash
 $ helm init --service-account tiller
@@ -222,37 +222,70 @@ $ helm upgrade <release-name> ./reddit
 
 `helm install reddit --dry-run --debug --name reddit-test` - дебаг
 `helm del --purge reddit-test` - удалить
-kubectl describe pod <pod-name>
+`kubectl describe pod <pod-name>` - информация о поде
 `kubectl get pods --all-namespaces` - Получить список подов во всех пространствах имен
 
 
-## gitlab
-развернули свой Gitlab в кластере;
+## GitLab + Kubernetes
+* Подготовил GKE-кластер Поправил конигурацию terraform для создания пула bigpool
+* Развернул свой Gitlab в кластере
+* Установим GitLab
+  * Добавим репозиторий Gitlab
+    ```bash
+    $ helm repo add gitlab https://charts.gitlab.io
+    ```
+  * скачаем Gitlab Chart
+    ```bash
+    helm fetch gitlab/gitlab-omnibus --version 0.1.37 --untar
+    cd gitlab-omnibus
+    ```
+  * установка 
+    ```
+    helm install --name gitlab . -f values.yaml
+    ```
+  * Должно пройти несколько минут. Найдите выданный IP-адрес ingress-контроллера nginx.
+    ```
+    kubectl get service -n nginx-ingress nginx
+    NAME    TYPE           CLUSTER-IP    EXTERNAL-IP    PORT(S)                                   AGE
+    nginx   LoadBalancer   10.11.253.1   35.195.91.32   80:30416/TCP,443:30241/TCP,22:31229/TCP   113s
+    ```
+* настроили gitlab для микросервисов нашего приложения
+* загрузка в гитлаб
+  ```
+  git init
+  git remote add origin http://gitlab-gitlab/4babushkin/ui.git
+  git add .
+  git commit -m "Initial commit"
+  git push -u origin master
 
+  git init
+  git remote add origin http://gitlab-gitlab/4babushkin/comment.git
+  git add .
+  git commit -m "Initial commit"
+  git push -u origin master
 
-git init
-git remote add origin http://gitlab-gitlab/4babushkin/ui.git
-git add .
-git commit -m "Initial commit"
-git push -u origin master
+  git init
+  git remote add origin http://gitlab-gitlab/4babushkin/post.git
+  git add .
+  git commit -m "Initial commit"
+  git push -u origin master
 
-git init
-git remote add origin http://gitlab-gitlab/4babushkin/comment.git
-git add .
-git commit -m "Initial commit"
-git push -u origin master
+  git init
+  git remote add origin http://gitlab-gitlab/4babushkin/reddit-deploy.git
+  git add .
+  git commit -m "Initial commit"
+  git push -u origin master
+  ```
 
-git init
-git remote add origin http://gitlab-gitlab/4babushkin/post.git
-git add .
-git commit -m "Initial commit"
-git push -u origin master
-
-git init
-git remote add origin http://gitlab-gitlab/4babushkin/reddit-deploy.git
-git add .
-git commit -m "Initial commit"
-git push -u origin master
+* создал staging и production среды 
+```bash
+helm ls
+NAME       	REVISION	UPDATED                 	STATUS  	CHART                	APP VERSION	NAMESPACE 
+gitlab     	1       	Mon Jun 24 19:46:02 2019	DEPLOYED	gitlab-omnibus-0.1.37	           	default   
+production 	1       	Mon Jun 24 20:49:30 2019	DEPLOYED	reddit-0.1.0         	           	production
+reddit-test	1       	Mon Jun 24 19:31:01 2019	DEPLOYED	reddit-0.1.0         	           	default   
+staging    	1       	Mon Jun 24 20:17:39 2019	DEPLOYED	reddit-0.1.0         	           	staging   
+```
 
 
 # Lesson-27 HW kubernetes-3

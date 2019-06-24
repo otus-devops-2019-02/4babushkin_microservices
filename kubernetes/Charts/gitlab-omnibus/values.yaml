@@ -35,10 +35,13 @@ postgresImage: postgres:9.6.5
 postgresDedicatedStorage: true
 postgresAccessMode: ReadWriteOnce
 #postgresStorageSize: 30Gi
+postgresStorageSize: 20Gi
 gitlabDataAccessMode: ReadWriteOnce
 #gitlabDataStorageSize: 30Gi
+gitlabDataStorageSize: 20Gi
 gitlabRegistryAccessMode: ReadWriteOnce
 #gitlabRegistryStorageSize: 30Gi
+gitlabRegistryStorageSize: 20Gi
 gitlabConfigAccessMode: ReadWriteOnce
 #gitlabConfigStorageSize: 1Gi
 gitlabRunnerImage: gitlab/gitlab-runner:alpine-v10.6.0
