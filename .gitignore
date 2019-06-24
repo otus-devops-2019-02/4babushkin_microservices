@@ -21,3 +21,5 @@ geerlingguy.docker
 .vscode
 
 .env
+
+src/reddit-deploy

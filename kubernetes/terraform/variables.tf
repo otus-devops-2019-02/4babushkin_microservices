@@ -6,7 +6,7 @@ variable "project" {
 }
 
 variable "region" {
-  default = "eu-west1-b"
+  default = "eu-west1-d"
 }
 
 variable "cluster_name" {
@@ -18,7 +18,7 @@ variable "cluster_zone" {
 }
 
 variable "cluster_k8s_version" {
-  default = "1.12.8-gke.6"
+  default = "1.12.8-gke.10"
 }
 
 variable "initial_node_count" {
