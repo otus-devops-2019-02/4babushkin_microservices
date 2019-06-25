@@ -91,7 +91,45 @@ $ helm upgrade staging --namespace staging ./reddit --install
 
 Сделал 3 job’а для каждой из компонент приложений (post-endpoints, comment-endpoints, ui-endpoints),
 
+Установим grafana (поправте gist там ошибка)
+```
+helm upgrade --install grafana stable/grafana --set "server.adminPassword=admin" \
+--set "server.service.type=NodePort" \
+--set "ingress.enabled=true" \
+--set "ingress.hosts={reddit-grafana}"
+```
+Даже параметром `--set "server.adminPassword=admin"` не пускал в графану пришлось
+  * зайти в pod grafana
+    ```
+    kubectl exec -it grafana-5c75f79c6f-xgxcb -- /bin/bash
+    ```
+  * сменить пароль руками
+    ```
+    grafana-cli admin reset-admin-password admin
+    ```
 
+
+### Логирование
+Добавьте label самой мощной ноде в кластере
+```
+kubectl label node gke-standard-cluster-1-bigpool-2710ad09-xknl elastichost=true
+```
+Создайте файлы в новой папке kubernetes/efk/
+
+Запустите стек в вашем k8s
+```
+$ kubectl apply -f ./efk
+```
+Kibana поставим из helm чарт
+```
+helm upgrade --install kibana stable/kibana \
+--set "ingress.enabled=true" \
+--set "ingress.hosts={reddit-kibana}" \
+--set "env.ELASTICSEARCH_URL=http://elasticsearch-logging:9200" \
+--version 0.1.1
+```
+
+http://reddit-kibana/
 
 # Lesson-28 HW kubernetes-4
 [![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-4)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
