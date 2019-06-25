@@ -1,8 +1,100 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+# Lesson-29 HW kubernetes-5
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-5)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+
+развернуть кластер k8s:
+* минимум 2 ноды g1-small (1,5 ГБ)
+* минимум 1 нода n1-standard-2 (7,5 ГБ)
+  
+В настройках:
+* Stackdriver Logging - Отключен
+* Stackdriver Monitoring - Отключен
+* Устаревшие права доступа - Включено
+
+```
+$ gcloud container clusters get-credentials standard-cluster-1 --zone europe-west1-d --project docker-239201
+$ kubectl apply -f reddit/tiller.yml
+```
+Теперь запустим tiller-сервер
+```
+$ helm init --service-account tiller
+```
+
+Из Helm-чарта установим ingress-контроллер nginx
+```
+$ helm install stable/nginx-ingress --name nginx
+```
+
+Prometheus будем ставить с помощью Helm чарта
+Загрузим prometheus локально в Charts каталог
+```
+cd kubernetes/charts
+helm fetch --untar stable/prometheus
+```
+Создайте внутри директории чарта файл `custom_values.yml`
+
+Запустите Prometheus в k8s из charsts/prometheus
+```
+$ helm upgrade prom . -f custom_values.yml --install
+```
+http://reddit-prometheus
+
+включим сервис [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics) 
+
+в `custom_values.yml`
+```yaml
+kubeStateMetrics:
+  ## If false, kube-state-metrics will not be installed
+  ##
+  enabled: true
+```
+Обновим релиз
+```
+helm upgrade prom . -f custom_values.yml --install
+```
+включим сервис nodeExporter
+
+```yaml
+nodeExporter:
+  ## If false, node-exporter will not be installed
+  ##
+  enabled: true
+```
+Обновим релиз
+```
+helm upgrade prom . -f custom_values.yml --install
+```
+
+Запустите приложение из helm чарта reddit
+```
+$ helm upgrade reddit-test ./reddit --install
+$ helm upgrade production --namespace production ./reddit --install
+$ helm upgrade staging --namespace staging ./reddit --install
+```
+Теперь мы можем использовать механизм ServiceDiscovery для обнаружения приложений, запущенных в k8s
+Приложения будем искать так же, как и служебные сервисы k8s
+```yaml
+  - job_name: 'reddit-endpoints'
+    kubernetes_sd_configs:
+      - role: endpoints
+    relabel_configs:
+        - action: labelmap
+          regex: __meta_kubernetes_service_label_(.+)
+        - source_labels: [__meta_kubernetes_namespace]
+          target_label: kubernetes_namespace
+        - source_labels: [__meta_kubernetes_service_name]
+          target_label: kubernetes_name
+```
+
+Сделал 3 job’а для каждой из компонент приложений (post-endpoints, comment-endpoints, ui-endpoints),
+
+
+
 # Lesson-28 HW kubernetes-4
-[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-3)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-4)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
 ## Основное задание
 Helm - пакетный менеджер для Kubernetes.

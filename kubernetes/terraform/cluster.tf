@@ -5,6 +5,7 @@ resource "google_container_cluster" "cluster" {
   name               = "${var.cluster_name}"
   zone               = "${var.cluster_zone}"
   #min_master_version = "${var.cluster_k8s_version}"
+  enable_legacy_abac = true
 
   addons_config {
 
