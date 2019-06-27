@@ -1,8 +1,210 @@
 # 4babushkin_microservices
 4babushkin microservices repository
 
+# Lesson-29 HW kubernetes-5
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-5)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+
+
+развернуть кластер k8s:
+* минимум 2 ноды g1-small (1,5 ГБ)
+* минимум 1 нода n1-standard-2 (7,5 ГБ)
+  
+В настройках:
+* Stackdriver Logging - Отключен
+* Stackdriver Monitoring - Отключен
+* Устаревшие права доступа - Включено
+
+```
+$ gcloud container clusters get-credentials standard-cluster-1 --zone europe-west1-d --project docker-239201
+$ kubectl apply -f reddit/tiller.yml
+```
+Теперь запустим tiller-сервер
+```
+$ helm init --service-account tiller
+```
+
+Из Helm-чарта установим ingress-контроллер nginx
+```
+$ helm install stable/nginx-ingress --name nginx
+```
+
+узнаем ip и пропишем в hosts
+```
+ kubectl get svc
+NAME                                  TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                      AGE
+kubernetes                            ClusterIP      10.11.240.1     <none>          443/TCP                      19m
+nginx-nginx-ingress-controller        LoadBalancer   10.11.247.208   34.77.209.151   80:32505/TCP,443:30579/TCP   10m
+nginx-nginx-ingress-default-backend   ClusterIP      10.11.251.147   <none>          80/TCP                       10m
+```
+Prometheus будем ставить с помощью Helm чарта
+Загрузим prometheus локально в Charts каталог
+```
+cd kubernetes/charts
+helm fetch --untar stable/prometheus
+```
+Создайте внутри директории чарта файл `custom_values.yml`
+
+Запустите Prometheus в k8s из charsts/prometheus
+```
+$ helm upgrade prom . -f custom_values.yml --install
+```
+http://reddit-prometheus
+
+включим сервис [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics) 
+
+в `custom_values.yml`
+```yaml
+kubeStateMetrics:
+  ## If false, kube-state-metrics will not be installed
+  ##
+  enabled: true
+```
+Обновим релиз
+```
+helm upgrade prom . -f custom_values.yml --install
+```
+включим сервис nodeExporter
+
+```yaml
+nodeExporter:
+  ## If false, node-exporter will not be installed
+  ##
+  enabled: true
+```
+Обновим релиз
+```
+helm upgrade prom . -f custom_values.yml --install
+```
+
+Запустите приложение из helm чарта reddit
+```
+$ helm upgrade reddit-test ./reddit --install
+$ helm upgrade production --namespace production ./reddit --install
+$ helm upgrade staging --namespace staging ./reddit --install
+```
+Теперь мы можем использовать механизм ServiceDiscovery для обнаружения приложений, запущенных в k8s
+Приложения будем искать так же, как и служебные сервисы k8s
+```yaml
+  - job_name: 'reddit-endpoints'
+    kubernetes_sd_configs:
+      - role: endpoints
+    relabel_configs:
+        - action: labelmap
+          regex: __meta_kubernetes_service_label_(.+)
+        - source_labels: [__meta_kubernetes_namespace]
+          target_label: kubernetes_namespace
+        - source_labels: [__meta_kubernetes_service_name]
+          target_label: kubernetes_name
+```
+
+Сделал 3 job’а для каждой из компонент приложений (post-endpoints, comment-endpoints, ui-endpoints),
+
+Установим grafana (поправте gist там ошибка)
+```
+helm upgrade --install grafana stable/grafana --set "server.adminPassword=admin" \
+--set "server.service.type=NodePort" \
+--set "ingress.enabled=true" \
+--set "ingress.hosts={reddit-grafana}"
+```
+Даже параметром `--set "server.adminPassword=admin"` не пускал в графану пришлось
+  * зайти в pod grafana
+    ```
+    kubectl exec -it grafana-5c75f79c6f-xgxcb -- /bin/bash
+    ```
+  * сменить пароль руками
+    ```
+    grafana-cli admin reset-admin-password admin
+    ```
+Адрес найдите из имени сервиса prometheus сервера
+```
+kubectl get svc                                                                       
+NAME                                  TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                      AGE
+grafana                               ClusterIP      10.11.246.90    <none>          80/TCP                       2m14s
+kubernetes                            ClusterIP      10.11.240.1     <none>          443/TCP                      26m
+nginx-nginx-ingress-controller        LoadBalancer   10.11.247.208   34.77.209.151   80:32505/TCP,443:30579/TCP   17m
+nginx-nginx-ingress-default-backend   ClusterIP      10.11.251.147   <none>          80/TCP                       17m
+prom-prometheus-kube-state-metrics    ClusterIP      None            <none>          80/TCP                       17m
+prom-prometheus-node-exporter         ClusterIP      None            <none>          9100/TCP                     17m
+prom-prometheus-server                LoadBalancer   10.11.253.104   34.76.140.11    80:31051/TCP                 17m
+reddit-test-comment                   ClusterIP      10.11.248.178   <none>          9292/TCP                     16m
+reddit-test-mongodb                   ClusterIP      10.11.248.255   <none>          27017/TCP                    16m
+reddit-test-post                      ClusterIP      10.11.241.74    <none>          5000/TCP                     16m
+reddit-test-ui                        NodePort       10.11.250.96    <none>          9292:32343/TCP               16m
+```
+
+### Логирование
+Добавьте label самой мощной ноде в кластере
+```
+kubectl label node gke-standard-cluster-1-bigpool-2710ad09-xknl elastichost=true
+```
+Создайте файлы в новой папке kubernetes/efk/
+
+Запустите стек в вашем k8s
+```
+$ kubectl apply -f ./efk
+```
+Kibana поставим из helm чарт
+```
+helm upgrade --install kibana stable/kibana \
+--set "ingress.enabled=true" \
+--set "ingress.hosts={reddit-kibana}" \
+--set "env.ELASTICSEARCH_URL=http://elasticsearch-logging:9200" \
+--version 0.1.1
+```
+
+http://reddit-kibana/
+
+
+## Задание со * 2
+https://habr.com/ru/company/flant/blog/353410/
+
+```
+helm fetch --untar stable/prometheus-operator
+```
+сделаем как мы делали в prometeus
+
+скопируем values.yaml в custom_values.yaml 
+
+включим создание Ingress’а для подключения через nginx и дал имя 
+```yaml
+  ingress:
+    enabled: true
+    annotations: {}
+    labels: {}
+
+    ## Hostnames.
+    ## Must be provided if Ingress is enabled.
+    ##
+    # hosts:
+    #   - prometheus.domain.com
+    hosts: ["prometheus-operator"]
+
+```
+
+Настройте мониторинг post endpoints
+```yaml
+  additionalServiceMonitors:
+    - name: post-monitor
+      selector:
+        matchLabels:
+          app: reddit
+          component: post
+      namespaceSelector:
+        any: true
+      endpoints:
+        - port: post
+```
+```
+helm upgrade promoper . -f custom_values.yaml --install
+```
+не запустился прищлось остановить основной prometeus
+```
+helm del --purge prom
+```
+
+
 # Lesson-28 HW kubernetes-4
-[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-3)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
+[![Build Status](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices.svg?branch=kubernetes-4)](https://travis-ci.com/otus-devops-2019-02/4babushkin_microservices)
 
 ## Основное задание
 Helm - пакетный менеджер для Kubernetes.
